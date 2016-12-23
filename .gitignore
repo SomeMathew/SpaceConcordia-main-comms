@@ -1,1 +1,10 @@
 *~
+
+# Prerequisites
+*.d
+
+# Object files (Maybe remove them?)
+#*.o
+#*.ko
+#*.obj
+#*.elf
