@@ -1,6 +1,8 @@
 # name of executable
 
-ELF=$(notdir $(CURDIR)).elf                    
+PRG=$(notdir $(CURDIR))
+ELF=$(PRG).elf
+SIZ=$(PRG).size                  
 
 # Tool path
 TOOLVERSION=6_2-2016q4
@@ -17,6 +19,7 @@ CC=$(TOOLROOT)/arm-none-eabi-gcc
 LD=$(TOOLROOT)/arm-none-eabi-gcc
 AR=$(TOOLROOT)/arm-none-eabi-ar
 AS=$(TOOLROOT)/arm-none-eabi-as
+SZ=$(TOOLROOT)/arm-none-eabi-size
 
 # Code Paths
 
@@ -52,16 +55,22 @@ STARTUP = startup_stm32f10x_md.o system_stm32f10x.o
 
 FULLASSERT = -DUSE_FULL_ASSERT 
 
-LDFLAGS+= --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 
-CFLAGS+= -mcpu=cortex-m3 -mthumb 
+LDFLAGS+= --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,-Map=$(PRG).map 
+LDFLAGS+= -Xlinker -gc-sections
+CFLAGS+= -mcpu=cortex-m3 -mthumb -Wall -std=gnu11
 CFLAGS+= -I$(TEMPLATEROOT) -I$(DEVICE) -I$(CORE) -I$(PERIPH)/inc -I.
 CFLAGS+= -D$(PTYPE) -DUSE_STDPERIPH_DRIVER $(FULLASSERT)
 CFLAGS+= -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
 
 # Build executable 
 
+all : $(ELF) secondary-outputs
+
 $(ELF) : $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+
+$(SIZ) : $(ELF)
+	$(SZ) --format=berkeley $(ELF)
 
 # compile and generate dependency info
 
@@ -78,6 +87,7 @@ clean:
 debug: $(ELF)
 	arm-none-eabi-gdb -iex "target extended-remote :4242" $(ELF)
 
+secondary-outputs: $(SIZ)
 
 # pull in dependencies
 
