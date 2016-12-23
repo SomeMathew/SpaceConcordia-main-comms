@@ -3,8 +3,9 @@
 ELF=$(notdir $(CURDIR)).elf                    
 
 # Tool path
-
-TOOLROOT=/usr/bin
+TOOLVERSION=6_2-2016q4
+TOOLNAME=gcc-arm-none-eabi-$(TOOLVERSION)
+TOOLROOT=/usr/local/$(TOOLNAME)/bin
 
 # Library path
 
