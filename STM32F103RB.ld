@@ -1,16 +1,8 @@
 /*
 Linker script for STM32F10x_128K_8K
 
-modified from
-
-http://www.codesourcery.com/archives/arm-gnu/msg02972.html
-http://communities.mentor.com/community/cs/archives/arm-gnu/msg02972.html
 */
 
-/*
-There will be a link error if there is not this amount of RAM free at the
-end.
-*/
 
 _Minimum_Stack_Size = 256;
 

@@ -1,4 +1,4 @@
-TEMPLATEROOT = /home/vec/code/main-comms
+TEMPLATEROOT = $(CURDIR)/..
 
 # compilation flags for gdb
 

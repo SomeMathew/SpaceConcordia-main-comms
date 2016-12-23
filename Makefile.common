@@ -8,7 +8,7 @@ TOOLROOT=/usr/bin
 
 # Library path
 
-LIBROOT=/home/vec/code/stm32/STM32F10x_StdPeriph_Lib_V3.5.0
+LIBROOT=$(CURDIR)/../STM32F10x_StdPeriph_Lib_V3.5.0
 
 # Tools
 
