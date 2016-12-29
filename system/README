@@ -1,0 +1,18 @@
+STM32Cube FW F1 V1.4.0
+	Includes CMSIS v4.5.0
+	
+Directory structure
+
+CMSIS
+	inc
+		non-device specific library headers for cortex-mx
+	src
+		device specific files system_xxx.c and startup.s files
+	
+stm32f1xx
+	inc
+		STM32CubeF1 HAL header files
+	src
+		STM32CubeF1 source files
+		
+	
