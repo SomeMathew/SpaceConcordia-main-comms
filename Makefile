@@ -1,55 +1,65 @@
+PROJROOT = $(CURDIR)
+OBJDIR = bin
+SRCDIR = src
+INCDIR = inc
+LDDIR = ldscripts
+
 # compilation flags for gdb
 
-CFLAGS  = -O1 -g
+CFLAGS = -O1 -g
 ASFLAGS = -g 
 
 # object files
 
-OBJS=  $(STARTUP) main.o
-OBJS+= stm32f10x_gpio.o stm32f10x_rcc.o
+OBJS=  $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) main.o)
+
+HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc.o stm32f1xx_hal.o stm32f1xx_hal_cortex.o
 
 # name of executable
 
-PRG=$(notdir $(CURDIR))
-ELF=$(PRG).elf
+PRG=$(notdir $(PROJROOT))
+ELF=$(OBJDIR)/$(PRG).elf
+MAP=$(OBJDIR)/$(PRG).map
 SIZ=$(PRG).size                  
 
 # Tool path
 TOOLVERSION=6_2-2016q4
 TOOLNAME=gcc-arm-none-eabi-$(TOOLVERSION)
 TOOLROOT=/usr/local/$(TOOLNAME)
-TOOLBINPATH=$(TOOLROOT)/bin
+TOOLBINROOT=$(TOOLROOT)/bin
 
 # Library path
 
-LIBROOT=$(CURDIR)/system
+SYSDIR=system
 
 # Tools
 
-CC=$(TOOLBINPATH)/arm-none-eabi-gcc
-LD=$(TOOLBINPATH)/arm-none-eabi-gcc
-AR=$(TOOLBINPATH)/arm-none-eabi-ar
-AS=$(TOOLBINPATH)/arm-none-eabi-as
-SZ=$(TOOLBINPATH)/arm-none-eabi-size
+CC=$(TOOLBINROOT)/arm-none-eabi-gcc
+LD=$(TOOLBINROOT)/arm-none-eabi-gcc
+AR=$(TOOLBINROOT)/arm-none-eabi-ar
+AS=$(TOOLBINROOT)/arm-none-eabi-as
+SZ=$(TOOLBINROOT)/arm-none-eabi-size
 
 # Code Paths
 
-DEVICE=$(LIBROOT)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x
-CORE=$(LIBROOT)/Libraries/CMSIS/CM3/CoreSupport
-PERIPH=$(LIBROOT)/Libraries/STM32F10x_StdPeriph_Driver
+DEVICE=$(SYSDIR)/cmsis
+DRIVER=$(SYSDIR)/stm32f1xx
 
 # Search path for standard files
 
-vpath %.c $(TEMPLATEROOT)
+vpath %.c $(SRCDIR)
+vpath %.h $(INCDIR)
 
-# Search path for perpheral library
+# Search path for driver library
 
-vpath %.c $(CORE)
-vpath %.c $(PERIPH)/src
-vpath %.c $(DEVICE)
-vpath %.s $(DEVICE)/startup/gcc_ride7
+vpath %.c $(DEVICE)/$(SRCDIR)
+vpath %.s $(DEVICE)/$(SRCDIR)
+vpath %.h $(DEVICE)/$(INCDIR)
 
-# Search path for Library
+vpath %.c $(DRIVER)/$(SRCDIR)
+vpath %.h $(DRIVER)/$(INCDIR)
+
+# Search path for additional libraries
 
 #~ vpath %.c $(TEMPLATEROOT)/Library/ff9/src
 #~ vpath %.c $(TEMPLATEROOT)/Library/ff9/src/option
@@ -58,19 +68,19 @@ vpath %.s $(DEVICE)/startup/gcc_ride7
 #  Processor specific
 
 PTYPE = STM32F103xB 
-LDSCRIPT = $(TEMPLATEROOT)/STM32F103RB.ld
-STARTUP = startup_stm32f10x_md.o system_stm32f10x.o 
+LDSCRIPT = $(LDDIR)/STM32F103RB.ld
+STARTUP = startup_stm32f103xb.o system_stm32f1xx.o 
 
 # Compilation Flags
 
 FULLASSERT = -DUSE_FULL_ASSERT 
 
-LDFLAGS+= --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,-Map=$(PRG).map 
+LDFLAGS+= --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,-Map=$(MAP)
 LDFLAGS+= -Xlinker -gc-sections
 CFLAGS+= -mcpu=cortex-m3 -mthumb -Wall -std=gnu11
-CFLAGS+= -I$(TEMPLATEROOT) -I$(DEVICE) -I$(CORE) -I$(PERIPH)/inc -I.
+CFLAGS+= -I$(INCDIR) -I$(DEVICE)/$(INCDIR) -I$(DRIVER)/$(INCDIR)
 CFLAGS+= -D$(PTYPE) -DUSE_HAL_DRIVER $(FULLASSERT)
-CFLAGS+= -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
+#~ CFLAGS+= -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
 
 # Build executable 
 
@@ -79,25 +89,25 @@ all : $(ELF) secondary-outputs
 $(ELF) : $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
-$(SIZ) : $(ELF)
+size : $(ELF)
 	$(SZ) --format=berkeley $(ELF)
 
 # compile and generate dependency info
 
-%.o: %.c
+$(OBJDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
-	$(CC) -MM $(CFLAGS) $< > $*.d
+	$(CC) -MM $(CFLAGS) $< > $(@D)/$*.d
 
-%.o: %.s
+$(OBJDIR)/%.o: %.s
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) startup_stm32f* $(CLEANOTHER)
+	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(OBJDIR)/startup_stm32f* $(MAP) $(CLEANOTHER)
 
 debug: $(ELF)
 	arm-none-eabi-gdb -iex "target extended-remote :4242" $(ELF)
 
-secondary-outputs: $(SIZ)
+secondary-outputs: size
 
 # pull in dependencies
 
