@@ -6,7 +6,7 @@ LDDIR = ldscripts
 
 # compilation flags for gdb
 
-CFLAGS = -O1 -g
+CFLAGS = -g
 ASFLAGS = -g 
 
 # object files
@@ -14,12 +14,13 @@ ASFLAGS = -g
 USROBJS = main.o sysTimer.o
 OBJS = $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) $(USROBJS))
 
-HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc.o stm32f1xx_hal.o stm32f1xx_hal_cortex.o stm32f1xx_hal_msp.o
+HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_rcc.o stm32f1xx_hal.o stm32f1xx_hal_cortex.o stm32f1xx_hal_msp.o
 
 # name of executable
 
 PRG=$(notdir $(PROJROOT))
 ELF=$(OBJDIR)/$(PRG).elf
+BIN=$(OBJDIR)/$(PRG).bin
 MAP=$(OBJDIR)/$(PRG).map
 SIZ=$(PRG).size                  
 
@@ -37,9 +38,11 @@ SYSDIR=system
 
 CC=$(TOOLBINROOT)/arm-none-eabi-gcc
 LD=$(TOOLBINROOT)/arm-none-eabi-gcc
+OC=$(TOOLBINROOT)/arm-none-eabi-objcopy
 AR=$(TOOLBINROOT)/arm-none-eabi-ar
 AS=$(TOOLBINROOT)/arm-none-eabi-as
 SZ=$(TOOLBINROOT)/arm-none-eabi-size
+GDB=$(TOOLBINROOT)/arm-none-eabi-gdb
 
 # Code Paths
 
@@ -77,8 +80,8 @@ STARTUP = startup_stm32f103xb.o system_stm32f1xx.o
 FULLASSERT = -DUSE_FULL_ASSERT 
 
 LDFLAGS+= --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,-Map=$(MAP)
-LDFLAGS+= -Xlinker -gc-sections
-CFLAGS+= -mcpu=cortex-m3 -mthumb -Wall -std=gnu11
+#~ LDFLAGS+= -Xlinker -gc-sections
+CFLAGS+= -mcpu=cortex-m3 -mthumb -Wall -std=gnu99
 CFLAGS+= -I$(INCDIR) -I$(DEVICE)/$(INCDIR) -I$(DRIVER)/$(INCDIR)
 CFLAGS+= -D$(PTYPE) -DUSE_HAL_DRIVER $(FULLASSERT)
 #~ CFLAGS+= -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
@@ -89,6 +92,9 @@ all : $(ELF) secondary-outputs
 
 $(ELF) : $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+
+$(BIN) : $(ELF)
+	$(OC) -O binary $(ELF) $(BIN)
 
 size : $(ELF)
 	$(SZ) --format=berkeley $(ELF)
@@ -103,12 +109,12 @@ $(OBJDIR)/%.o: %.s
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(OBJDIR)/startup_stm32f* $(MAP) $(CLEANOTHER)
+	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(BIN) $(OBJDIR)/startup_stm32f* $(MAP) $(CLEANOTHER)
 
 debug: $(ELF)
-	arm-none-eabi-gdb -iex "target extended-remote :4242" $(ELF)
+	$(GDB) -iex "target extended-remote :4242" $(ELF)
 
-secondary-outputs: size
+secondary-outputs: $(BIN) size 
 
 # pull in dependencies
 
