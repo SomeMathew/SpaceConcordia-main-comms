@@ -81,7 +81,7 @@ FULLASSERT = -DUSE_FULL_ASSERT
 
 LDFLAGS+= --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,-Map=$(MAP)
 #~ LDFLAGS+= -Xlinker -gc-sections
-CFLAGS+= -mcpu=cortex-m3 -mthumb -Wall -std=gnu99
+CFLAGS+= -mcpu=cortex-m3 -mthumb -Wall -std=gnu11
 CFLAGS+= -I$(INCDIR) -I$(DEVICE)/$(INCDIR) -I$(DRIVER)/$(INCDIR)
 CFLAGS+= -D$(PTYPE) -DUSE_HAL_DRIVER $(FULLASSERT)
 #~ CFLAGS+= -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
