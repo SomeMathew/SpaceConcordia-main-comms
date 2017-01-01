@@ -11,6 +11,7 @@
 #include "main.h"
 
 static void clockConfig(void);
+static void initBlinkGPIO(void);
 
 int main(void) {
 	// Call the CSMSIS system clock routine to store the clock frequency
@@ -20,9 +21,23 @@ int main(void) {
 	HAL_Init();
 	clockConfig();
 	
+	initBlinkGPIO();
 	while(1) {
-		
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		HAL_Delay(1000);
 	}
+}
+
+static void initBlinkGPIO(void) {
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	GPIO_InitTypeDef gpioInit = {
+		.Pin = GPIO_PIN_5,
+		.Mode = GPIO_MODE_OUTPUT_PP,
+		.Pull = GPIO_NOPULL,
+		.Speed = GPIO_SPEED_FREQ_LOW,
+	};
+	
+	HAL_GPIO_Init(GPIOA, &gpioInit);
 }
 
 /**
