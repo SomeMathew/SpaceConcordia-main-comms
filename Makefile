@@ -113,7 +113,7 @@ clean:
 	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(BIN) $(OBJDIR)/startup_stm32f* $(MAP) $(CLEANOTHER)
 
 debug: $(ELF)
-	$(GDB) -iex "target extended-remote :4242" $(ELF)
+	$(GDB) -iex "target extended-remote :4242" -ex "load" $(ELF)
 
 secondary-outputs: $(BIN) size 
 
