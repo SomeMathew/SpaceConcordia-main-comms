@@ -15,6 +15,7 @@
 #include <stdint.h>
  
 #include "stm32f1xx_hal.h"
+#include "scheduler.h"
 
 
 #endif /* __MAIN_H */
