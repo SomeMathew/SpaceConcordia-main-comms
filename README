@@ -1,0 +1,11 @@
+Tools Dependency:
+	GCC ARM Embedded v6_2-2016q4
+		Location: /usr/local/
+		Download: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm
+	
+
+Includes the HAL driver for Stm32cubeF1 v1.4.0
+	For the full HAL and docs:
+		https://drive.google.com/drive/folders/0BxtNAK9MVzFkNUk2VEVmSkMxeU0?usp=sharing
+	
+	
