@@ -18,4 +18,15 @@
 #include "scheduler.h"
 
 
+#define LENGTH_OF_ARRAY(__ARRAY__) ((sizeof(__ARRAY__))/(sizeof(__ARRAY__[0])))
+
+/**
+ * @brief Macro to initialize a basic structure to hold an array and its size.
+ *
+ * The macro uses the array pointer and includes the length of the given array at compile time to
+ * to traverse the list safely.
+ */
+#define ARRAY_WITH_SIZE(__ARRAY__) {(__ARRAY__), (LENGTH_OF_ARRAY(__ARRAY__))}
+
+
 #endif /* __MAIN_H */
