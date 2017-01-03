@@ -28,5 +28,20 @@
  */
 #define ARRAY_WITH_SIZE(__ARRAY__) {(__ARRAY__), (LENGTH_OF_ARRAY(__ARRAY__))}
 
+// Device drivers and GPIO configurations
+// TODO more clean implementation or move to an other module?
+
+
+#define SERIALPC_DEVICE USART2
+
+#define SERIALPC_CONF_BAUDRATE 115200
+#define SERIALPC_CONF_WORDLENGTH UART_WORDLENGTH_8B
+#define SERIALPC_CONF_STOPBITS UART_STOPBITS_1
+#define SERIALPC_CONF_PARITY UART_PARITY_NONE
+
+enum {
+    DRIVER_STATUS_ERROR = -1,
+    DRIVER_STATUS_OK = 1,
+};
 
 #endif /* __MAIN_H */

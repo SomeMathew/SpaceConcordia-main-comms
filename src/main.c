@@ -8,11 +8,19 @@
  * 
  */
 
+
+
 #include "main.h"
+#include "uart.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
+static void initTestUart(void);
 static void blink(void *);
+static void sendTestUart(void * arg);
+
+uint8_t testData[] = "test\n";
+size_t testDataSize = LENGTH_OF_ARRAY(testData) - 1;
 
 int main(void) {
 	// Call the CSMSIS system clock routine to store the clock frequency
@@ -23,8 +31,10 @@ int main(void) {
 	clockConfig();
 	
 	initBlinkGPIO();
+	initTestUart();
 	
 	struct task * blinkTask = createTask(blink, NULL, 1000, true, 0);
+	struct task * uartTestTask = createTask(sendTestUart, NULL, 2000, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();
@@ -34,6 +44,10 @@ int main(void) {
 
 static void blink(void * arg) {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+}
+
+static void sendTestUart(void * arg) {
+	uart_write(SERIALPC_DEVICE, testData, testDataSize);
 }
 
 static void initBlinkGPIO(void) {
@@ -46,6 +60,17 @@ static void initBlinkGPIO(void) {
 	};
 	
 	HAL_GPIO_Init(GPIOA, &gpioInit);
+}
+
+static void initTestUart(void) {
+	struct uart_ioConf setConfig = {
+		.baudrate = SERIALPC_CONF_BAUDRATE,
+		.parity = SERIALPC_CONF_PARITY,
+		.wordlength = SERIALPC_CONF_WORDLENGTH,
+		.stopbits = SERIALPC_CONF_STOPBITS,
+	};
+	
+	uart_open(SERIALPC_DEVICE, &setConfig); 
 }
 
 /**

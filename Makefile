@@ -11,10 +11,12 @@ ASFLAGS = -g
 
 # object files
 
-USROBJS = main.o sysTimer.o scheduler.o linkedList.o
+USROBJS = main.o sysTimer.o scheduler.o linkedList.o uart.o
 OBJS = $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) $(USROBJS))
 
-HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_rcc.o stm32f1xx_hal.o stm32f1xx_hal_cortex.o stm32f1xx_hal_msp.o
+HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_rcc.o \
+           stm32f1xx_hal.o stm32f1xx_hal_cortex.o stm32f1xx_hal_msp.o \
+           stm32f1xx_hal_uart.o
 
 # name of executable
 
