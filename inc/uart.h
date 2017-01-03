@@ -32,6 +32,9 @@ struct uart_ioConf {
 int uart_open(USART_TypeDef * USARTx, struct uart_ioConf * conf);
 int uart_ioctl_set(USART_TypeDef * USARTx, int ioSetMask, struct uart_ioConf * conf);
 int uart_close(USART_TypeDef * USARTx);
+/**
+ * Writes the data buffer to the given USARTx
+ */
 int uart_write(USART_TypeDef * USARTx, uint8_t * data, uint16_t size);
 
 void USART2_IRQHandler(void);

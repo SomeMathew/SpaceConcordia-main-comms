@@ -6,12 +6,12 @@ LDDIR = ldscripts
 
 # compilation flags for gdb
 
-CFLAGS = -g
+CFLAGS = -Og -g
 ASFLAGS = -g 
 
 # object files
 
-USROBJS = main.o sysTimer.o scheduler.o linkedList.o uart.o
+USROBJS = main.o sysTimer.o scheduler.o linkedList.o uart.o logging.o
 OBJS = $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) $(USROBJS))
 
 HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_rcc.o \
@@ -79,7 +79,7 @@ STARTUP = startup_stm32f103xb.o system_stm32f1xx.o
 
 # Compilation Flags
 
-FULLASSERT = -DUSE_FULL_ASSERT 
+FULLASSERT = -DUSE_FULL_ASSERT
 
 LDFLAGS += --specs=nosys.specs -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,-Map=$(MAP)
 LDFLAGS += -Xlinker -gc-sections

@@ -17,6 +17,8 @@
 
 #define BUFFER_MAX_SIZE 200
 
+#ifndef LOGGING_DISABLED
+
 static int (*logStream)(uint8_t * data, size_t size);
 
 static int logLevel = LOG_NONE;
@@ -186,3 +188,5 @@ int logging_send(char * message, enum logging_level level) {
 				return 0;
 	}
 }
+
+#endif /* LOGGING_DISABLED */

@@ -20,10 +20,13 @@ static void initTestUart(void);
 static void blink(void *);
 static void sendTestUart(void * arg);
 static void sendTestLog(void * arg);
+static void changeTestLog(void * arg);
 static int loggingStream(uint8_t * data, size_t size);
 
 uint8_t testData[] = "test\n";
 size_t testDataSize = LENGTH_OF_ARRAY(testData) - 1;
+
+bool changeLogTestActive = true;
 
 int main(void) {
 	// Call the CSMSIS system clock routine to store the clock frequency
@@ -40,6 +43,7 @@ int main(void) {
 	struct task * blinkTask = createTask(blink, NULL, 1000, true, 0);
 	struct task * uartTestTask = createTask(sendTestUart, NULL, 2000, true, 0);
 	struct task * logTestTask = createTask(sendTestLog, NULL, 500, true, 0);
+	struct task * logChangeTask = createTask(changeTestLog, &changeLogTestActive, 3000, true, 1);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();
@@ -57,8 +61,17 @@ static void sendTestUart(void * arg) {
 
 static void sendTestLog(void * arg) {
 	logging_send("testLog debug", LOG_DEBUG);
-	//~ logging_send("testLog warning", LOG_WARNING);
-	//~ logging_send("testLog critical", LOG_CRITICAL);
+	logging_send("testLog warning", LOG_WARNING);
+	logging_send("testLog critical", LOG_CRITICAL);
+}
+
+static void changeTestLog(void * arg) {
+	if (*((bool *) arg)) {
+		logging_setVerbosity(LOG_CRITICAL);
+	} else {
+		logging_setVerbosity(LOG_DEBUG | LOG_WARNING | LOG_CRITICAL);
+	}
+	*((bool *) arg) = !(*((bool *) arg));
 }
 
 static void initBlinkGPIO(void) {
