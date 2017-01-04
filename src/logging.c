@@ -21,6 +21,13 @@
 
 static int (*logStream)(uint8_t * data, size_t size);
 
+/**
+ * @brief Set to true to disable a module output.
+ * 
+ * Will default to false for all.
+ */
+static bool moduleFilter[LOGGING_MODULE_COUNT]; 
+
 static int logLevel = LOG_NONE;
 static bool logActive = false;
 static bool logPause = false;
@@ -155,6 +162,17 @@ int logging_setVerbosity(int verbosity) {
 	return 0;
 }
 
+/*
+ * Filter a module index to remove its output dynamically.
+ */
+int logging_filterModule(uint8_t moduleIndex, bool filterOn) {
+	if (moduleIndex >= LOGGING_MODULE_COUNT) {
+		return -1;
+	}
+	moduleFilter[moduleIndex] = filterOn;
+	return 0;
+}
+
 int logging_setOutput(int (*write)(uint8_t * data, size_t size)) {
 	logStream = write;
 	return 0;
@@ -165,14 +183,17 @@ int logging_setOutput(int (*write)(uint8_t * data, size_t size)) {
  * 
  * The Event will only be sent if the log level is currently active.
  * 
- * Returns negative if logging is closed, 0 if the specified level is inactive, 1 on success.
+ * Returns 	negative if logging is closed or invalid module index, 
+ * 			0 if the specified level or module index is inactive, 
+ * 			1 on success.
  */
-int logging_send(char * message, enum logging_level level) {
-	if (!logActive) {
+int logging_send(char * message, uint8_t moduleIndex, enum logging_level level) {
+	if (!logActive || (moduleIndex >= LOGGING_MODULE_COUNT)) {
 		return -1;
-	} else if (logPause) {
+	} else if (logPause || (moduleFilter[moduleIndex] == true)) {
 		return 0;
 	}
+	
 	switch(level) {
 	case LOG_CRITICAL:
 				return writeLogCritical(message);
@@ -184,7 +205,7 @@ int logging_send(char * message, enum logging_level level) {
 				return writeLogDebug(message);
 				break;
 	default:
-				logging_send("Invalid LOG level sent", LOG_WARNING); 
+				logging_send("Invalid LOG level sent", moduleIndex, LOG_WARNING); 
 				return 0;
 	}
 }

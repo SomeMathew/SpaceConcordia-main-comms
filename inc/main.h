@@ -28,6 +28,10 @@
  */
 #define ARRAY_WITH_SIZE(__ARRAY__) {(__ARRAY__), (LENGTH_OF_ARRAY(__ARRAY__))}
 
+// Module index for logging control
+
+#define MODULE_INDEX_MAINTEST 0
+
 // Device drivers and GPIO configurations
 // TODO more clean implementation or move to an other module?
 

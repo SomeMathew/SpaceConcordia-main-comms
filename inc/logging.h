@@ -21,6 +21,9 @@
 
 #ifndef LOGGING_DISABLED
 
+#define LOGGING_MODULE_MAX_FILTER 256
+#define LOGGING_MODULE_COUNT 32
+
 enum logging_level {
 	LOG_DEBUG = 0x1,
 	LOG_WARNING = 0x2,
@@ -52,24 +55,37 @@ int logging_close();
  */
 int logging_pause(bool status);
 
-/*
- * Set the active level of logging, verbosity is the logical OR of the required level. 
+/**
+ * @brief Set the active level of logging. 
  * 
- * return negative if the logging system is inactive.
+ * @param verbosity logical OR of the required level
+ * @return negative if the logging system is inactive.
  */
 int logging_setVerbosity(int verbosity);
 
-/*
- * Select the output function where the logging message are sent.
+/**
+ * @brief Filter a module output.
+ * 
+ * @param moduleIndex the index to filter
+ * @param filterOn true to stop the output
+ * 
+ * @return negative if moduleIndex is invalid (>= LOGGING_MODULE_COUNT)
+ */
+int logging_filterModule(uint8_t moduleIndex, bool filterOn);
+
+/**
+ * @brief Select the output function where the logging message are sent.
  */
 int logging_setOutput(int (*write)(uint8_t * data, size_t size));
 
-/*
- * Log a new event to the stream, this will only output if the verbosity is set for the given level. 
+/**
+ * @brief Log a new event to the stream, this will only output if the verbosity is set for the given level. 
  * 
- * Returns negative if logging is closed, 0 if the specified level is inactive, 1 on success.
+ * @return negative if logging is closed or invalid module index, \
+ * 			0 if the specified level or module index is inactive, \
+ * 			1 on success.
  */
-int logging_send(char * message, enum logging_level level);
+int logging_send(char * message, uint8_t moduleIndex, enum logging_level level);
 
 #else
 
@@ -77,6 +93,7 @@ int logging_send(char * message, enum logging_level level);
 #define logging_close() ((void)0)
 #define logging_pause(__status__) ((void)0)
 #define logging_setVerbosity(__verbosity__) ((void)0)
+#define logging_filterModule(__moduleIndex__, __filterOn__) ((void)0)
 #define logging_setOutput(__write__) ((void)0)
 #define logging_send(__message__, __level__) ((void)0)
 

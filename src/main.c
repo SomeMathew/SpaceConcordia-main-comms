@@ -60,16 +60,19 @@ static void sendTestUart(void * arg) {
 }
 
 static void sendTestLog(void * arg) {
-	logging_send("testLog debug", LOG_DEBUG);
-	logging_send("testLog warning", LOG_WARNING);
-	logging_send("testLog critical", LOG_CRITICAL);
+	logging_send("testLog debug", MODULE_INDEX_MAINTEST, LOG_DEBUG);
+	logging_send("testLog warning", MODULE_INDEX_MAINTEST, LOG_WARNING);
+	logging_send("testLog critical module disable", MODULE_INDEX_MAINTEST + 1, LOG_CRITICAL);
+	logging_send("testLog critical", MODULE_INDEX_MAINTEST, LOG_CRITICAL);
 }
 
 static void changeTestLog(void * arg) {
 	if (*((bool *) arg)) {
 		logging_setVerbosity(LOG_CRITICAL);
+		logging_filterModule(MODULE_INDEX_MAINTEST + 1, false);
 	} else {
 		logging_setVerbosity(LOG_DEBUG | LOG_WARNING | LOG_CRITICAL);
+		logging_filterModule(MODULE_INDEX_MAINTEST + 1, true);
 	}
 	*((bool *) arg) = !(*((bool *) arg));
 }
