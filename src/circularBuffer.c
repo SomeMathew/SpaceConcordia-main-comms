@@ -13,35 +13,57 @@
 #include "circularBuffer.h"
 
 static inline size_t remainingCapacity(struct circularBuffer * buffer) {
-	return (buffer->size - buffer->arraySize - 1)
+	return (buffer_size(buffer) - buffer->arraySize - 1);
 }
 
-int buffer_attachArray(struct circularBuffer * buffer, void * arrayStart, size_t arraySize) {
+int buffer_attachArray(struct circularBuffer * buffer, uint8_t * arrayStart, size_t arraySize) {
 	if (buffer == NULL || arraySize == 0) {
 		return BUFFER_STATUS_ERROR;
 	}
 	
 	buffer->size = 0;
 	buffer->arraySize = arraySize;
-	buffer->start = arrayStart;
-	buffer->end = arrayStart + arraySize;
+	buffer->mem = arrayStart;
 	buffer->front = 0;
 	buffer->back = 0;
 	
 	return BUFFER_STATUS_OK;
 }
 
-int buffer_enqueue(struct circularBuffer * buffer, void * element, size_t count) {
-	if (count > remainingCapacity(buffer)) {
-		return BUFFER_STATUS_FULL;
+size_t buffer_enqueue(struct circularBuffer * buffer, uint8_t * elements, size_t count) {
+	size_t i;
+	for (i = 0; i < count && remainingCapacity(buffer) > 0; i++) {
+		buffer->mem[buffer->back] = elements[i];
+		buffer->back = (buffer->back + 1) % buffer->arraySize;
 	}
 	
+	return i;
 }
-void * buffer_dequeue(struct circularBuffer * buffer);
 
-size_t buffer_size(struct circularBuffer * buffer) {
-	if (buffer == NULL) {
-		return 0;
+size_t buffer_dequeue(struct circularBuffer * buffer, uint8_t * out, size_t count) {
+	size_t i;
+	for (i = 0; i < count && buffer_size(buffer) > 0; i++) {
+		out[i] = buffer->mem[buffer->front];
+		buffer->front = (buffer->front + 1) % buffer->arraySize;
 	}
-	return buffer->size;
+	return i;
+}
+
+size_t buffer_peakLinear(struct circularBuffer * buffer, uint8_t ** startOut) {
+	*startOut = buffer->mem + buffer->front;
+	size_t size;
+	// Always count data in non circular fashion, if wrapped around only count front to arrayEnd
+	if (buffer->front <= buffer->back) {
+		size = buffer_size(buffer);
+	} else {
+		size = buffer->arraySize - buffer->front;
+	}
+	
+	buffer->peakLinearSize = size;
+	return buffer->peakLinearSize;
+}
+
+void buffer_advance(struct circularBuffer * buffer) {
+	buffer->front = (buffer->front + buffer_peakSize(buffer)) % buffer->arraySize;
+	buffer->peakLinearSize = 0;
 }
