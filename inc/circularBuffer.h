@@ -21,7 +21,7 @@ enum buffer_status {
 };
 
 struct circularBuffer {
-    size_t size;
+    //~ size_t size;
     size_t arraySize;
     uint8_t * mem;
     size_t front;
@@ -74,7 +74,8 @@ static inline size_t buffer_peakSize(struct circularBuffer * buffer) {
 }
 
 static inline size_t buffer_size(struct circularBuffer * buffer) {
-	return buffer->size;
+	//~ return buffer->size;
+	return (buffer->arraySize - buffer->front + buffer->back) % buffer->arraySize;
 }
 
 #endif /* CIRCULARBUFFER_H_ */

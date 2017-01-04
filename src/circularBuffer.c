@@ -21,7 +21,7 @@ int buffer_attachArray(struct circularBuffer * buffer, uint8_t * arrayStart, siz
 		return BUFFER_STATUS_ERROR;
 	}
 	
-	buffer->size = 0;
+	//~ buffer->size = 0;
 	buffer->arraySize = arraySize;
 	buffer->mem = arrayStart;
 	buffer->front = 0;
