@@ -63,7 +63,7 @@ size_t buffer_peakLinear(struct circularBuffer * buffer, uint8_t ** startOut) {
 	return buffer->peakLinearSize;
 }
 
-void buffer_advance(struct circularBuffer * buffer) {
+void buffer_advanceLinear(struct circularBuffer * buffer) {
 	buffer->front = (buffer->front + buffer_peakSize(buffer)) % buffer->arraySize;
 	buffer->peakLinearSize = 0;
 }
