@@ -26,7 +26,7 @@ struct circularBuffer {
     uint8_t * mem;
     size_t front;
     size_t back;
-    size_t peakLinearSize;
+    size_t peekLinearSize;
 };
 
 int buffer_attachArray(struct circularBuffer * buffer, uint8_t * arrayStart, size_t arraySize);
@@ -59,18 +59,18 @@ size_t buffer_dequeue(struct circularBuffer * buffer, uint8_t * out, size_t coun
  * @param startOut Pointer will be set to point to the first element in the sequence.
  * @return number of consecutive elements pointed to by startOut
  */
-size_t buffer_peakLinear(struct circularBuffer * buffer, uint8_t ** startOut);
+size_t buffer_peekLinear(struct circularBuffer * buffer, uint8_t ** startOut);
 
 /**
- * @brief Advance the front pointer by the amount of memory last peaked by peakLinear().
+ * @brief Advance the front pointer by the amount of memory last peeked by peekLinear().
  */
 void buffer_advanceLinear(struct circularBuffer * buffer);
 
 /**
- * @brief Size of last peak that hasn't been advanced.
+ * @brief Size of last peek that hasn't been advanced.
  */
-static inline size_t buffer_peakSize(struct circularBuffer * buffer) {
-	return buffer->peakLinearSize;	
+static inline size_t buffer_peekSize(struct circularBuffer * buffer) {
+	return buffer->peekLinearSize;	
 }
 
 static inline size_t buffer_size(struct circularBuffer * buffer) {

@@ -49,7 +49,7 @@ size_t buffer_dequeue(struct circularBuffer * buffer, uint8_t * out, size_t coun
 	return i;
 }
 
-size_t buffer_peakLinear(struct circularBuffer * buffer, uint8_t ** startOut) {
+size_t buffer_peekLinear(struct circularBuffer * buffer, uint8_t ** startOut) {
 	*startOut = buffer->mem + buffer->front;
 	size_t size;
 	// Always count data in non circular fashion, if wrapped around only count front to arrayEnd
@@ -59,11 +59,11 @@ size_t buffer_peakLinear(struct circularBuffer * buffer, uint8_t ** startOut) {
 		size = buffer->arraySize - buffer->front;
 	}
 	
-	buffer->peakLinearSize = size;
-	return buffer->peakLinearSize;
+	buffer->peekLinearSize = size;
+	return buffer->peekLinearSize;
 }
 
 void buffer_advanceLinear(struct circularBuffer * buffer) {
-	buffer->front = (buffer->front + buffer_peakSize(buffer)) % buffer->arraySize;
-	buffer->peakLinearSize = 0;
+	buffer->front = (buffer->front + buffer_peekSize(buffer)) % buffer->arraySize;
+	buffer->peekLinearSize = 0;
 }

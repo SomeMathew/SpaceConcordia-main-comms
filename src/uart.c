@@ -109,7 +109,7 @@ int uart_write(USART_TypeDef * USARTx, uint8_t * data, uint16_t size) {
 		return DRIVER_STATUS_ERROR;	// full buffer
 	}
 	
-	if (buffer_peakSize(buffer) == 0) {
+	if (buffer_peekSize(buffer) == 0) {
 		sendBuffer(usartDeviceHandle, buffer);
 	}
 	return DRIVER_STATUS_OK;
@@ -122,7 +122,7 @@ void USART2_IRQHandler(void)
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart == &device_uart2) {
-		if (buffer_peakSize(&bufferUart2) > 0) {
+		if (buffer_peekSize(&bufferUart2) > 0) {
 			buffer_advanceLinear(&bufferUart2);
 		}
 		if (buffer_size(&bufferUart2) > 0) {
@@ -133,6 +133,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 
 static int sendBuffer(UART_HandleTypeDef * deviceHandle, struct circularBuffer * buffer) {
 	uint8_t * data;
-	size_t size = buffer_peakLinear(buffer, &data);
+	size_t size = buffer_peekLinear(buffer, &data);
 	return HAL_UART_Transmit_IT(deviceHandle, data, size);
 }
