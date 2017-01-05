@@ -21,6 +21,7 @@ static void blink(void *);
 static void sendTestUart(void * arg);
 static void sendTestLog(void * arg);
 static void changeTestLog(void * arg);
+static void uartRead(void * arg);
 static int loggingStream(uint8_t * data, size_t size);
 
 uint8_t testData[] = "test\n";
@@ -41,9 +42,10 @@ int main(void) {
 	logging_open(loggingStream);
 	
 	struct task * blinkTask = createTask(blink, NULL, 1000, true, 0);
-	struct task * uartTestTask = createTask(sendTestUart, NULL, 2000, true, 0);
+	//~ struct task * uartTestTask = createTask(sendTestUart, NULL, 2000, true, 0);
 	struct task * logTestTask = createTask(sendTestLog, NULL, 500, true, 0);
 	struct task * logChangeTask = createTask(changeTestLog, &changeLogTestActive, 3000, true, 1);
+	struct task * uartReadTask = createTask(uartRead, NULL, 200, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();
@@ -68,13 +70,22 @@ static void sendTestLog(void * arg) {
 
 static void changeTestLog(void * arg) {
 	if (*((bool *) arg)) {
-		logging_setVerbosity(LOG_CRITICAL);
+		logging_setVerbosity(LOG_DEBUG | LOG_CRITICAL);
 		logging_filterModule(MODULE_INDEX_MAINTEST + 1, false);
 	} else {
 		logging_setVerbosity(LOG_DEBUG | LOG_WARNING | LOG_CRITICAL);
 		logging_filterModule(MODULE_INDEX_MAINTEST + 1, true);
 	}
 	*((bool *) arg) = !(*((bool *) arg));
+}
+
+static void uartRead(void * arg) {
+	uint8_t buffer[50];
+	size_t readSize = uart_read(SERIALPC_DEVICE, buffer, 49);
+	if (readSize > 0) {
+		buffer[readSize] = '\0';
+		logging_send((char *) buffer, MODULE_INDEX_MAINTEST, LOG_DEBUG);
+	}
 }
 
 static void initBlinkGPIO(void) {

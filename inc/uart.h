@@ -34,8 +34,17 @@ int uart_ioctl_set(USART_TypeDef * USARTx, int ioSetMask, struct uart_ioConf * c
 int uart_close(USART_TypeDef * USARTx);
 /**
  * Writes the data buffer to the given USARTx
+ * 
+ * @return the count of data written to the uart.
  */
-int uart_write(USART_TypeDef * USARTx, uint8_t * data, uint16_t size);
+size_t uart_write(USART_TypeDef * USARTx, uint8_t * data, size_t size);
+
+/**
+ * @brief Read from uart into data.
+ * 
+ * @return the count of data read from the uart.
+ */
+size_t uart_read(USART_TypeDef * USARTx, uint8_t * data, size_t size);
 
 void USART2_IRQHandler(void);
 
