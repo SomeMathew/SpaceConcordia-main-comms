@@ -40,12 +40,13 @@ int main(void) {
 	initBlinkGPIO();
 	initTestUart();
 	logging_open(loggingStream);
+	commands_init(SERIALPC_DEVICE);
 	
 	struct task * blinkTask = createTask(blink, NULL, 1000, true, 0);
 	//~ struct task * uartTestTask = createTask(sendTestUart, NULL, 2000, true, 0);
 	struct task * logTestTask = createTask(sendTestLog, NULL, 500, true, 0);
-	struct task * logChangeTask = createTask(changeTestLog, &changeLogTestActive, 3000, true, 1);
-	struct task * uartReadTask = createTask(uartRead, NULL, 200, true, 0);
+	//~ struct task * logChangeTask = createTask(changeTestLog, &changeLogTestActive, 3000, true, 1);
+	//~ struct task * uartReadTask = createTask(uartRead, NULL, 200, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();
@@ -64,8 +65,9 @@ static void sendTestUart(void * arg) {
 static void sendTestLog(void * arg) {
 	logging_send("testLog debug", MODULE_INDEX_MAINTEST, LOG_DEBUG);
 	logging_send("testLog warning", MODULE_INDEX_MAINTEST, LOG_WARNING);
-	logging_send("testLog critical module disable", MODULE_INDEX_MAINTEST + 1, LOG_CRITICAL);
+	logging_send("testLog critical +1", MODULE_INDEX_MAINTEST + 1, LOG_CRITICAL);
 	logging_send("testLog critical", MODULE_INDEX_MAINTEST, LOG_CRITICAL);
+	logging_send("testLog critical 24", 24, LOG_CRITICAL);
 }
 
 static void changeTestLog(void * arg) {
