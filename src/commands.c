@@ -31,7 +31,7 @@ struct commandEntry {
 static void logFilter(uint8_t * args, size_t size);
 static void logVerbosity(uint8_t * args, size_t size);
 
-static void nextCommands(void * arg);
+static void nextCommands(uint32_t event, void * arg);
 static struct commandEntry * findCommandEntry(uint8_t * cmd);
 
 
@@ -56,12 +56,12 @@ static struct commandEntry commandTable[] = {
 };
 
 void commands_init(USART_TypeDef * USARTx) {
-	nextCommandTask = createTask(nextCommands, NULL, 20, true, 2);
+	nextCommandTask = createTask(nextCommands, 0, NULL, 20, true, 2);
 	inputUSART = USARTx;
 }
 //~ void commands_close();
 
-static void nextCommands(void * arg) {
+static void nextCommands(uint32_t event, void * arg) {
 	uint8_t * cursor = buffer;
 	// find if there's a command start (#)
 	do {

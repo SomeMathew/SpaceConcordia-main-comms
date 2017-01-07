@@ -28,7 +28,9 @@ enum taskStatus {
 struct task {
     struct linkedList_node link;
     struct task * nextEmpty;
-    void (*vector)(void *);
+    void (*vector)(uint32_t, void *);
+    //~ void (*vector)(void *);
+    uint32_t event;
     void * argument;
     uint8_t priority;
     uint32_t timeInterval;
@@ -75,8 +77,8 @@ static inline bool timeIsBefore(uint32_t a, uint32_t b) {
 }
 
 // Returns NULL on error
-struct task * createTask(void (*vector)(void *), void * argument, uint32_t timeInterval,
-        bool repeat, uint8_t priority) {
+struct task * createTask(void (*vector)(uint32_t, void *), uint32_t event, void * argument,
+		uint32_t timeInterval, bool repeat, uint8_t priority) {
     // TODO verify input values
     if (tasksCount >= TASKS_MAX_COUNT || vector == NULL) {
         return NULL;
@@ -93,6 +95,7 @@ struct task * createTask(void (*vector)(void *), void * argument, uint32_t timeI
 
     newTask->nextEmpty = NULL;
     newTask->vector = vector;
+    newTask->event = event;
     newTask->argument = argument;
     newTask->priority = priority;
     newTask->timeInterval = timeInterval;
@@ -133,7 +136,7 @@ static bool runNextReadyTask(void) {
     for (int priority = 0; priority < TASKS_PRIORITY_COUNT; priority++) {
         if (readyTasksLists[priority].length > 0) {
             struct task * nextTask = readyTasksLists[priority].head.next->element;
-            nextTask->vector(nextTask->argument);
+            nextTask->vector(nextTask->event, nextTask->argument);
             nextTask->timeLastEnd = sysTimer_GetTick();
             // skip toggle/destroy if the task destroyed itself
             if (nextTask->vector != NULL) {

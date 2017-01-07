@@ -13,15 +13,16 @@
 #include "main.h"
 #include "uart.h"
 #include "logging.h"
+#include "commands.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
 static void initTestUart(void);
-static void blink(void *);
-static void sendTestUart(void * arg);
-static void sendTestLog(void * arg);
-static void changeTestLog(void * arg);
-static void uartRead(void * arg);
+static void blink(uint32_t, void *);
+static void sendTestUart(uint32_t event, void * arg);
+static void sendTestLog(uint32_t event, void * arg);
+static void changeTestLog(uint32_t event, void * arg);
+static void uartRead(uint32_t event, void * arg);
 static int loggingStream(uint8_t * data, size_t size);
 
 uint8_t testData[] = "test\n";
@@ -42,11 +43,11 @@ int main(void) {
 	logging_open(loggingStream);
 	commands_init(SERIALPC_DEVICE);
 	
-	struct task * blinkTask = createTask(blink, NULL, 1000, true, 0);
-	//~ struct task * uartTestTask = createTask(sendTestUart, NULL, 2000, true, 0);
-	struct task * logTestTask = createTask(sendTestLog, NULL, 500, true, 0);
-	//~ struct task * logChangeTask = createTask(changeTestLog, &changeLogTestActive, 3000, true, 1);
-	//~ struct task * uartReadTask = createTask(uartRead, NULL, 200, true, 0);
+	struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
+	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
+	struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
+	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
+	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();
@@ -54,15 +55,15 @@ int main(void) {
 	}
 }
 
-static void blink(void * arg) {
+static void blink(uint32_t event, void * arg) {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 }
 
-static void sendTestUart(void * arg) {
+static void sendTestUart(uint32_t event, void * arg) {
 	uart_write(SERIALPC_DEVICE, testData, testDataSize);
 }
 
-static void sendTestLog(void * arg) {
+static void sendTestLog(uint32_t event, void * arg) {
 	logging_send("testLog debug", MODULE_INDEX_MAINTEST, LOG_DEBUG);
 	logging_send("testLog warning", MODULE_INDEX_MAINTEST, LOG_WARNING);
 	logging_send("testLog critical +1", MODULE_INDEX_MAINTEST + 1, LOG_CRITICAL);
@@ -70,7 +71,7 @@ static void sendTestLog(void * arg) {
 	logging_send("testLog critical 24", 24, LOG_CRITICAL);
 }
 
-static void changeTestLog(void * arg) {
+static void changeTestLog(uint32_t event, void * arg) {
 	if (*((bool *) arg)) {
 		logging_setVerbosity(LOG_DEBUG | LOG_CRITICAL);
 		logging_filterModule(MODULE_INDEX_MAINTEST + 1, false);
@@ -81,7 +82,7 @@ static void changeTestLog(void * arg) {
 	*((bool *) arg) = !(*((bool *) arg));
 }
 
-static void uartRead(void * arg) {
+static void uartRead(uint32_t event, void * arg) {
 	uint8_t buffer[50];
 	size_t readSize = uart_read(SERIALPC_DEVICE, buffer, 49);
 	if (readSize > 0) {

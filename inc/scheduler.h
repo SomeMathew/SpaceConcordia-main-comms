@@ -36,8 +36,8 @@
 struct task;
 
 bool runScheduler(void);
-struct task * createTask(void (*vector)(void *), void * argument, uint32_t timeInterval,
-        bool repeat, uint8_t priority);
+struct task * createTask(void (*vector)(uint32_t, void *), uint32_t event, void * argument,
+		uint32_t timeInterval, bool repeat, uint8_t priority);
 bool destroyTask(struct task *);
 
 #endif /* SCHEDULER_H_ */
