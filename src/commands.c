@@ -36,7 +36,7 @@ static struct commandEntry * findCommandEntry(uint8_t * cmd);
 
 
 static struct task * nextCommandTask; 
-static USART_TypeDef * inputUSART;
+static McuDevice_UART inputUART;
 static uint8_t buffer[BUFFER_LENGTH];
 
 /**
@@ -55,9 +55,9 @@ static struct commandEntry commandTable[] = {
 	{"LV", logVerbosity, 1}, // logging change verbosity
 };
 
-void commands_init(USART_TypeDef * USARTx) {
+void commands_init(McuDevice_UART UARTx) {
 	nextCommandTask = createTask(nextCommands, 0, NULL, 20, true, 2);
-	inputUSART = USARTx;
+	inputUART = UARTx;
 }
 //~ void commands_close();
 
@@ -65,13 +65,13 @@ static void nextCommands(uint32_t event, void * arg) {
 	uint8_t * cursor = buffer;
 	// find if there's a command start (#)
 	do {
-		if (uart_read(inputUSART, cursor, 1) == 0) {
+		if (uart_read(inputUART, cursor, 1) == 0) {
 			return;
 		}
 	} while (*cursor != '#');
 	
 	// find command and its entry
-	if (uart_read(inputUSART, cursor, COMMAND_SIZE) != COMMAND_SIZE) {
+	if (uart_read(inputUART, cursor, COMMAND_SIZE) != COMMAND_SIZE) {
 		return;
 	}
 	
@@ -86,7 +86,7 @@ static void nextCommands(uint32_t event, void * arg) {
 		entry->argSize = MAX_ARG_SIZE;
 	}
 	
-	size_t argReadSize = uart_read(inputUSART, cursor, entry->argSize);
+	size_t argReadSize = uart_read(inputUART, cursor, entry->argSize);
 	buffer[argReadSize] = '\0'; // make it a null terminated string
 	(entry->vector)(cursor, argReadSize);
 }

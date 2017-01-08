@@ -16,13 +16,14 @@
 
 #include "scheduler.h"
 #include "uart.h"
+#include "mcuDevices.h"
 
 /**
  * @brief Start the command listener on the given UART.
  * 
- * @param USARTx an opened uart device.
+ * @param UARTx an opened uart device.
  */
-void commands_init(USART_TypeDef * USARTx);
+void commands_init(McuDevice_UART UARTx);
 //~ void commands_close();
 
 #endif /* __COMMANDS_H */

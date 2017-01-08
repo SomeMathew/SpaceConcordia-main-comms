@@ -10,6 +10,7 @@
 
 #include "uart.h"
 #include "circularBuffer.h"
+#include "stm32f1xx_hal.h"
 
 #define BUFFER_TX_MAX_SIZE 512
 #define BUFFER_RX_MAX_SIZE 64
@@ -23,15 +24,23 @@
 #define DEFAULT_HWFLOWCTL UART_HWCONTROL_NONE
 #define DEFAULT_OVERSAMPLING UART_OVERSAMPLING_16
 
+/*
+ * UART_HandleTypeDef must stay as the first member of this struct so it can be cast back to 
+ * struct uart_Peripheral in the callback from the hal.
+ */
+struct uart_Peripheral {
+	UART_HandleTypeDef huart;
+	struct circularBuffer bufferTx;
+	uint8_t bufferTxArray[BUFFER_TX_MAX_SIZE];
+	struct circularBuffer bufferRx;
+	uint8_t bufferRxArray[BUFFER_RX_MAX_SIZE];
+	uint8_t memRxChar[4];
+};
 
-static struct circularBuffer bufferTxUart2;
-static uint8_t bufferTxArrayUart2[BUFFER_TX_MAX_SIZE];
-static struct circularBuffer bufferRxUart2;
-static uint8_t bufferRxArrayUart2[BUFFER_RX_MAX_SIZE];
-static uint8_t memRxCharUart2[4];
 
-static UART_HandleTypeDef device_uart2 = {
-        .Instance = USART2,
+static struct uart_Peripheral device_uart2 = {
+	.huart = {
+		.Instance = USART2,
         .Init = {
                 .BaudRate = DEFAULT_BAUDRATE,
                 .WordLength = DEFAULT_WORDLENGTH,
@@ -41,61 +50,36 @@ static UART_HandleTypeDef device_uart2 = {
                 .HwFlowCtl = DEFAULT_HWFLOWCTL,
                 .OverSampling = DEFAULT_OVERSAMPLING,
         },
+	},
 };
+
+McuDevice_UART mcuDevice_serialPC = &device_uart2;
 
 static int sendBuffer(UART_HandleTypeDef * device, struct circularBuffer * buffer);
 
 
-static inline UART_HandleTypeDef * getDevice(USART_TypeDef * USARTx) {
-	if (USARTx == USART2) {
-		return &device_uart2;
-	} else {
-		return NULL;
-	}
-}
-
-static inline struct circularBuffer * getTxBuffer(USART_TypeDef * USARTx) {
-	if (USARTx == USART2) {
-		return &bufferTxUart2;
-	} else {
-		return NULL;
-	}
-}
-
-static inline struct circularBuffer * getRxBuffer(USART_TypeDef * USARTx) {
-	if (USARTx == USART2) {
-		return &bufferRxUart2;
-	} else {
-		return NULL;
-	}
-}
-
-int uart_open(USART_TypeDef * USARTx, struct uart_ioConf * conf) {
-	if (USARTx == USART2) {
-		device_uart2.Init.BaudRate = conf->baudrate;
-		device_uart2.Init.WordLength = conf->wordlength;
-		device_uart2.Init.Parity = conf->parity;
-		device_uart2.Init.StopBits = conf->stopbits;
-		if (HAL_UART_Init(&device_uart2) != HAL_OK) {
-			return DRIVER_STATUS_ERROR;
-		};
-		
-		buffer_attachArray(&bufferTxUart2, bufferTxArrayUart2, LENGTH_OF_ARRAY(bufferTxArrayUart2));
-		buffer_attachArray(&bufferRxUart2, bufferRxArrayUart2, LENGTH_OF_ARRAY(bufferRxArrayUart2));
-		
-		HAL_UART_Receive_IT(&device_uart2, memRxCharUart2, 1);
-	} else {
+int uart_open(McuDevice_UART UARTx, struct uart_ioConf * conf) {
+	struct uart_Peripheral * device = (struct uart_Peripheral *) UARTx;
+	device->huart.Init.BaudRate = conf->baudrate;
+	device->huart.Init.WordLength = conf->wordlength;
+	device->huart.Init.Parity = conf->parity;
+	device->huart.Init.StopBits = conf->stopbits;
+	
+	if (HAL_UART_Init(&device->huart) != HAL_OK) {
 		return DRIVER_STATUS_ERROR;
-	}
+	};
+	
+	buffer_attachArray(&device->bufferTx, device->bufferTxArray, LENGTH_OF_ARRAY(device->bufferTxArray));
+	buffer_attachArray(&device->bufferRx, device->bufferRxArray, LENGTH_OF_ARRAY(device->bufferRxArray));
+	
+	HAL_UART_Receive_IT(&device->huart, device->memRxChar, 1);
 	
 	return DRIVER_STATUS_OK;
 }
 
-int uart_ioctl_set(USART_TypeDef * USARTx, int ioSetMask, struct uart_ioConf * conf) {
-	UART_HandleTypeDef * usartDeviceHandle = getDevice(USARTx);
-	if (usartDeviceHandle == NULL) {
-		return DRIVER_STATUS_ERROR;
-	}
+int uart_ioctl_set(McuDevice_UART UARTx, int ioSetMask, struct uart_ioConf * conf) {
+	struct uart_Peripheral * device = (struct uart_Peripheral *) UARTx;
+	UART_HandleTypeDef * usartDeviceHandle = &device->huart;
 
 	if (ioSetMask & UART_IOSET_BAUDRATE) {
 		usartDeviceHandle->Init.BaudRate = conf->baudrate;
@@ -117,16 +101,10 @@ int uart_ioctl_set(USART_TypeDef * USARTx, int ioSetMask, struct uart_ioConf * c
 	}
 }
 
-size_t uart_write(USART_TypeDef * USARTx, uint8_t * data, size_t size) {
-	UART_HandleTypeDef * usartDeviceHandle = getDevice(USARTx);
-	if (usartDeviceHandle == NULL) {
-		return 0;
-	}
-	
-	struct circularBuffer * buffer = getTxBuffer(USARTx);
-	if (buffer == NULL) {
-		return 0;
-	}
+size_t uart_write(McuDevice_UART UARTx, uint8_t * data, size_t size) {
+	struct uart_Peripheral * device = (struct uart_Peripheral *) UARTx;
+	UART_HandleTypeDef * usartDeviceHandle = &device->huart;
+	struct circularBuffer * buffer = &device->bufferTx;
 	
 	size_t writtenSize = buffer_enqueue(buffer, data, size);
 	
@@ -137,24 +115,21 @@ size_t uart_write(USART_TypeDef * USARTx, uint8_t * data, size_t size) {
 	return writtenSize;
 }
 
-size_t uart_read(USART_TypeDef * USARTx, uint8_t * data, size_t size) {
-	struct circularBuffer * buffer = getRxBuffer(USARTx);
-	if (buffer == NULL) {
-		return 0;
-	}
+size_t uart_read(McuDevice_UART UARTx, uint8_t * data, size_t size) {
+	struct uart_Peripheral * device = (struct uart_Peripheral *) UARTx;
+	struct circularBuffer * buffer = &device->bufferRx;
+	
 	return buffer_dequeue(buffer, data, size);
 }
 
 void USART2_IRQHandler(void)
 {
-  HAL_UART_IRQHandler(&device_uart2);
+  HAL_UART_IRQHandler(&device_uart2.huart);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-	struct circularBuffer * buffer = getTxBuffer(huart->Instance);
-	if (buffer == NULL) {
-		return;
-	}
+	struct uart_Peripheral * device = (struct uart_Peripheral *) huart;
+	struct circularBuffer * buffer = &device->bufferTx;
 	
 	if (buffer_peekSize(buffer) > 0) {
 		buffer_advanceLinear(buffer);
@@ -165,12 +140,10 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	struct circularBuffer * buffer = getRxBuffer(huart->Instance);
-	if (buffer == NULL) {
-		return;
-	}
-	buffer_enqueue(buffer, memRxCharUart2, 1);
-	HAL_UART_Receive_IT(&device_uart2, memRxCharUart2, 1);
+	struct uart_Peripheral * device = (struct uart_Peripheral *) huart;
+	struct circularBuffer * buffer = &device->bufferRx;
+	buffer_enqueue(buffer, device->memRxChar, 1);
+	HAL_UART_Receive_IT(&device->huart, device->memRxChar, 1);
 }
 
 static int sendBuffer(UART_HandleTypeDef * deviceHandle, struct circularBuffer * buffer) {

@@ -41,7 +41,7 @@ int main(void) {
 	initBlinkGPIO();
 	initTestUart();
 	logging_open(loggingStream);
-	commands_init(SERIALPC_DEVICE);
+	commands_init(mcuDevice_serialPC);
 	
 	struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
@@ -60,7 +60,7 @@ static void blink(uint32_t event, void * arg) {
 }
 
 static void sendTestUart(uint32_t event, void * arg) {
-	uart_write(SERIALPC_DEVICE, testData, testDataSize);
+	uart_write(mcuDevice_serialPC, testData, testDataSize);
 }
 
 static void sendTestLog(uint32_t event, void * arg) {
@@ -84,7 +84,7 @@ static void changeTestLog(uint32_t event, void * arg) {
 
 static void uartRead(uint32_t event, void * arg) {
 	uint8_t buffer[50];
-	size_t readSize = uart_read(SERIALPC_DEVICE, buffer, 49);
+	size_t readSize = uart_read(mcuDevice_serialPC, buffer, 49);
 	if (readSize > 0) {
 		buffer[readSize] = '\0';
 		logging_send((char *) buffer, MODULE_INDEX_MAINTEST, LOG_DEBUG);
@@ -111,11 +111,11 @@ static void initTestUart(void) {
 		.stopbits = SERIALPC_CONF_STOPBITS,
 	};
 	
-	uart_open(SERIALPC_DEVICE, &setConfig); 
+	uart_open(mcuDevice_serialPC, &setConfig); 
 }
 
 static int loggingStream(uint8_t * data, size_t size) {
-	return uart_write(SERIALPC_DEVICE, data, size);
+	return uart_write(mcuDevice_serialPC, data, size);
 }
 
 /**

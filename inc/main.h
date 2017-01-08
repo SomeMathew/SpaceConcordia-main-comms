@@ -16,6 +16,7 @@
  
 #include "stm32f1xx_hal.h"
 #include "scheduler.h"
+#include "mcuDevices.h"
 
 
 #define LENGTH_OF_ARRAY(__ARRAY__) ((sizeof(__ARRAY__))/(sizeof(__ARRAY__[0])))
@@ -35,8 +36,6 @@
 // Device drivers and GPIO configurations
 // TODO more clean implementation or move to an other module?
 
-
-#define SERIALPC_DEVICE USART2
 
 #define SERIALPC_CONF_BAUDRATE 460800
 #define SERIALPC_CONF_WORDLENGTH UART_WORDLENGTH_8B
