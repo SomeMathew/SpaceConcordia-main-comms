@@ -45,7 +45,7 @@ void HAL_MspDeInit(void)
  * @brief initialization of the low-level gpio for the UART peripherals.
  */
 void HAL_UART_MspInit(UART_HandleTypeDef * huart) {
-	if (huart->Instance == USART2) {
+	if (huart->Instance == USART2_DEVICE) {
 		__HAL_RCC_USART2_CLK_ENABLE();
 		EnableGpioClock(USART2_RX_PORT);
 		EnableGpioClock(USART2_TX_PORT);
@@ -71,6 +71,46 @@ void HAL_UART_MspInit(UART_HandleTypeDef * huart) {
 	}
 }
 
+/**
+ * @brief initialization of the low-level gpio and DMA for the I2C peripherals.
+ * 
+ * This callback function configures the following hardware resources:
+ * 		-Peripheral Clock
+ * 		-Peripheral GPIO (see pinmapping.h)
+ * 		-DMA
+ * 		-NVIC for DMA and IT transfer
+ */
+void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
+	if (hi2c->Instance == I2C2_DEVICE) {
+		__HAL_RCC_I2C2_CLK_ENABLE();
+		EnableGpioClock(I2C2_SCL_PORT);
+		EnableGpioClock(I2C2_SDA_PORT);
+		
+		// Initialize the SCL pin
+		GPIO_InitTypeDef gpioInit = {0};
+		
+		gpioInit.Pin = I2C2_SCL_PIN;
+		gpioInit.Mode = GPIO_MODE_AF_OD;
+		gpioInit.Pull = GPIO_PULLUP;
+		gpioInit.Speed = GPIO_SPEED_FREQ_HIGH;
+		
+		HAL_GPIO_Init(I2C2_SCL_PORT, &gpioInit);
+		
+		// Initialize the SDA pin, settings the same as SCL (OD, Pullup)
+		gpioInit.Pin = I2C2_SDA_PIN;
+		
+		HAL_GPIO_Init(I2C2_SDA_PORT, &gpioInit);
+		
+		// No DMA for I2C2 Set for interrupt based transfer
+		// TODO: Add possibility for a DMA define in pinmapping to activate it.
+		HAL_NVIC_SetPriority(I2C2_ER_IRQn, 0, 1);
+		HAL_NVIC_SetPriority(I2C2_EV_IRQn, 0, 2);
+		HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
+		HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
+	}
+	
+	// TODO I2C1, with DMA transfer.
+}
 
 /**
 * @brief Enable the given GPIO port clock signal only if it isn't already active.
