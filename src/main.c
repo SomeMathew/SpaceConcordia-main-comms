@@ -94,7 +94,7 @@ static void uartRead(uint32_t event, void * arg) {
 static void initBlinkGPIO(void) {
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	GPIO_InitTypeDef gpioInit = {
-		.Pin = GPIO_PIN_5,
+		.Pin = GPIO_PIN_0,
 		.Mode = GPIO_MODE_OUTPUT_PP,
 		.Pull = GPIO_NOPULL,
 		.Speed = GPIO_SPEED_FREQ_LOW,
