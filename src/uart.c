@@ -46,7 +46,7 @@ static struct uart_Peripheral device_uart1 = {
 			.StopBits = DEFAULT_STOPBITS,
 			.Parity = DEFAULT_PARITY,
 			.Mode = DEFAULT_MODE,
-			.HwFlowCtl = DEFAULT_HWFLOWCTL,
+			.HwFlowCtl = UART_HWCONTROL_RTS,
 			.OverSampling = DEFAULT_OVERSAMPLING,
 		},
 	},
@@ -68,7 +68,7 @@ static struct uart_Peripheral device_uart2 = {
 };
 
 McuDevice_UART mcuDevice_serialPC = &device_uart2;
-McuDevice_UART mcuDevice_uart1 = &device_uart1;
+McuDevice_UART mcuDevice_serialXBee = &device_uart1;
 
 static int sendBuffer(UART_HandleTypeDef * device, struct circularBuffer * buffer);
 

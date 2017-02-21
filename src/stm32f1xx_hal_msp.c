@@ -89,6 +89,13 @@ void HAL_UART_MspInit(UART_HandleTypeDef * huart) {
 		
 		HAL_GPIO_Init(USART1_RX_PORT, &gpioInit);
 		
+		gpioInit.Pin = USART1_RTS_PIN;
+		gpioInit.Mode = GPIO_MODE_AF_PP;
+		gpioInit.Pull = GPIO_NOPULL;
+		gpioInit.Speed = GPIO_SPEED_FREQ_HIGH;
+		
+		HAL_GPIO_Init(USART1_RTS_PORT, &gpioInit);
+		
 		// Enable the NVIC for the usart1
 		HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);

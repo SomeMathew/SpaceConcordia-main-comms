@@ -13,11 +13,6 @@
 #include "uart.h"
 #include "scheduler.h"
 
-#define XBEE_CONF_BAUDRATE 57600
-#define XBEE_CONF_WORDLENGTH UART_WORDLENGTH_8B
-#define XBEE_CONF_STOPBITS UART_STOPBITS_1
-#define XBEE_CONF_PARITY UART_PARITY_NONE
-
 static McuDevice_UART xbeeUartDevice = NULL;
 
 int xbee_open(McuDevice_UART uartDevice) {
@@ -25,17 +20,6 @@ int xbee_open(McuDevice_UART uartDevice) {
 		return DRIVER_STATUS_ERROR;
 	}
 	
-	struct uart_ioConf setConfig = {
-		.baudrate = XBEE_CONF_BAUDRATE,
-		.parity = XBEE_CONF_PARITY,
-		.wordlength = XBEE_CONF_WORDLENGTH,
-		.stopbits = XBEE_CONF_STOPBITS,
-	};
-	
-	if (uart_open(uartDevice, &setConfig) == DRIVER_STATUS_ERROR) {
-		return DRIVER_STATUS_ERROR;
-	} 
-
 	xbeeUartDevice = uartDevice;
 
 	return DRIVER_STATUS_OK;

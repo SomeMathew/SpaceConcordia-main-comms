@@ -14,10 +14,14 @@
 #include "uart.h"
 #include "logging.h"
 #include "commands.h"
+#include "xbee.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
 static void initTestUart(void);
+static int	initTestXbee(void);
+
+
 static void blink(uint32_t, void *);
 static void sendTestUart(uint32_t event, void * arg);
 static void sendTestLog(uint32_t event, void * arg);
@@ -40,6 +44,7 @@ int main(void) {
 	
 	initBlinkGPIO();
 	initTestUart();
+	initTestXbee();
 	logging_open(loggingStream);
 	commands_init(mcuDevice_serialPC);
 	
@@ -112,6 +117,17 @@ static void initTestUart(void) {
 	};
 	
 	uart_open(mcuDevice_serialPC, &setConfig); 
+}
+
+static int initTestXbee(void) {
+	struct uart_ioConf setConfig = {
+		.baudrate = XBEE_CONF_BAUDRATE,
+		.parity = XBEE_CONF_PARITY,
+		.wordlength = XBEE_CONF_WORDLENGTH,
+		.stopbits = XBEE_CONF_STOPBITS,
+	};
+	
+	return uart_open(mcuDevice_serialXBee, &setConfig);
 }
 
 static int loggingStream(uint8_t * data, size_t size) {
