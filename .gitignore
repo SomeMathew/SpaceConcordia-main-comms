@@ -4,7 +4,7 @@
 *.d
 
 # Object files (Maybe remove them?)
-#*.o
-#*.ko
-#*.obj
-#*.elf
+*.o
+*.ko
+*.obj
+*.elf
