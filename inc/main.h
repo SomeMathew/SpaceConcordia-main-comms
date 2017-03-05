@@ -32,6 +32,7 @@
 // Module index for logging control
 
 #define MODULE_INDEX_MAINTEST 0
+#define MODULE_INDEX_XBEE 2
 
 // Device drivers and GPIO configurations
 // TODO more clean implementation or move to an other module?
@@ -41,6 +42,11 @@
 #define SERIALPC_CONF_WORDLENGTH UART_WORDLENGTH_8B
 #define SERIALPC_CONF_STOPBITS UART_STOPBITS_1
 #define SERIALPC_CONF_PARITY UART_PARITY_NONE
+
+#define XBEE_CONF_BAUDRATE 57600
+#define XBEE_CONF_WORDLENGTH UART_WORDLENGTH_8B
+#define XBEE_CONF_STOPBITS UART_STOPBITS_1
+#define XBEE_CONF_PARITY UART_PARITY_NONE
 
 enum {
     DRIVER_STATUS_ERROR = -1,

@@ -32,7 +32,12 @@ struct uart_ioConf {
 
 int uart_open(McuDevice_UART UARTx, struct uart_ioConf * conf);
 int uart_ioctl_set(McuDevice_UART UARTx, int ioSetMask, struct uart_ioConf * conf);
+
+/**
+ * Currently unimplemented
+ */
 int uart_close(McuDevice_UART UARTx);
+
 /**
  * Writes the data buffer to the given USARTx
  * 

@@ -37,6 +37,20 @@ struct uart_Peripheral {
 	uint8_t memRxChar[4];
 };
 
+static struct uart_Peripheral device_uart1 = {
+	.huart = {
+		.Instance = USART1,
+		.Init = {
+			.BaudRate = DEFAULT_BAUDRATE,
+			.WordLength = DEFAULT_WORDLENGTH,
+			.StopBits = DEFAULT_STOPBITS,
+			.Parity = DEFAULT_PARITY,
+			.Mode = DEFAULT_MODE,
+			.HwFlowCtl = UART_HWCONTROL_RTS,
+			.OverSampling = DEFAULT_OVERSAMPLING,
+		},
+	},
+};
 
 static struct uart_Peripheral device_uart2 = {
 	.huart = {
@@ -54,6 +68,7 @@ static struct uart_Peripheral device_uart2 = {
 };
 
 McuDevice_UART mcuDevice_serialPC = &device_uart2;
+McuDevice_UART mcuDevice_serialXBee = &device_uart1;
 
 static int sendBuffer(UART_HandleTypeDef * device, struct circularBuffer * buffer);
 
@@ -120,6 +135,10 @@ size_t uart_read(McuDevice_UART UARTx, uint8_t * data, size_t size) {
 	struct circularBuffer * buffer = &device->bufferRx;
 	
 	return buffer_dequeue(buffer, data, size);
+}
+
+void USART1_IRQHandler(void) {
+	HAL_UART_IRQHandler(&device_uart1.huart);
 }
 
 void USART2_IRQHandler(void)

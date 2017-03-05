@@ -18,6 +18,7 @@ extern McuDevice_I2C mcuDevice_i2cBus1;
 extern McuDevice_I2C mcuDevice_i2cBus2;
 
 extern McuDevice_UART mcuDevice_serialPC;
+extern McuDevice_UART mcuDevice_serialXBee;
 
 #endif /* __MCU_DEVICES_H */
 
