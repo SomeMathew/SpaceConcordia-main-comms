@@ -90,7 +90,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef * huart) {
 		HAL_GPIO_Init(USART1_RX_PORT, &gpioInit);
 		
 		gpioInit.Pin = USART1_RTS_PIN;
-		gpioInit.Mode = GPIO_MODE_AF_PP;
+		gpioInit.Mode = GPIO_MODE_AF_INPUT;
 		gpioInit.Pull = GPIO_NOPULL;
 		gpioInit.Speed = GPIO_SPEED_FREQ_HIGH;
 		

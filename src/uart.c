@@ -137,6 +137,10 @@ size_t uart_read(McuDevice_UART UARTx, uint8_t * data, size_t size) {
 	return buffer_dequeue(buffer, data, size);
 }
 
+void USART1_IRQHandler(void) {
+	HAL_UART_IRQHandler(&device_uart1.huart);
+}
+
 void USART2_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&device_uart2.huart);
