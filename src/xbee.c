@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #include "main.h"
+#include "logging.h"
 #include "xbee.h"
 #include "uart.h"
 #include "scheduler.h"
@@ -17,6 +18,7 @@ static McuDevice_UART xbeeUartDevice = NULL;
 
 int xbee_open(McuDevice_UART uartDevice) {
 	if (xbeeUartDevice != NULL) {
+		logging_send("xbee open fail", MODULE_INDEX_XBEE, LOG_WARNING);
 		return DRIVER_STATUS_ERROR;
 	}
 	
@@ -36,6 +38,7 @@ int xbee_close() {
 
 int xbee_write(uint8_t * data, size_t size) {
 	if (xbeeUartDevice == NULL) {
+		logging_send("xbee write uart device is null", MODULE_INDEX_XBEE, LOG_WARNING);
 		return DRIVER_STATUS_ERROR;
 	}
 	uart_write(xbeeUartDevice, data, size);
