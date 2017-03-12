@@ -37,17 +37,17 @@ extern Acqbuff_Buffer acqbuff_Gyroscope;
 /**
  * @brief Write the string data to the buffer, for safety the string length
  * must be specified.
+ * 
+ * @return count written to buffer
  */
-int write(Acqbuff_Buffer buffer, uint8_t * data, size_t length);
+size_t write(Acqbuff_Buffer buffer, uint8_t * data, size_t count);
 
 /**
  * @brief Reads the buffer to data up to the specified length.
  * 
- * The string written to data by this call will be null-terminated.
- * 
- * @return number of character read.
+ * @return count read from buffer.
  */  
-size_t read(Acqbuff_Buffer buffer, uint8_t * data, size_t length); 
+size_t read(Acqbuff_Buffer buffer, uint8_t * data, size_t count); 
 
 /**
  * @brief Returns true if the buffer has new data since the last read.

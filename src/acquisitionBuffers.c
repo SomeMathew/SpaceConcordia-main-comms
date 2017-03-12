@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "acquisitionBuffers.h"
 
@@ -32,6 +33,7 @@
 struct entry {
 	bool newData;
 	uint8_t * buffer;
+	size_t bufferCapacity;
 	size_t bufferSize;
 };
 
@@ -44,7 +46,8 @@ struct entry {
  * 		static struct entry sensor_entry = {
  * 			.newData = false,
  * 			.buffer = sensor_buffer,
- * 			.bufferSize = SENSOR_BUFF_SIZE,
+ * 			.bufferCapacity = SENSOR_BUFF_SIZE,
+ * 			.bufferSize = 0,
  * 		};
  * 		Acqbuff_Buffer acqbuff_Sensor = &sensor_entry;
  */
@@ -52,7 +55,8 @@ static uint8_t pitot_buffer[PITOT_BUFF_SIZE];
 static struct entry pitot_entry = {
 	.newData = false,
 	.buffer = pitot_buffer,
-	.bufferSize = PITOT_BUFF_SIZE,
+	.bufferCapacity = PITOT_BUFF_SIZE,
+	.bufferSize = 0,
 };
 Acqbuff_Buffer acqbuff_Pitot = &pitot_entry;
 
@@ -60,7 +64,8 @@ static uint8_t barometer_buffer[BAROMETER_BUFF_SIZE];
 static struct entry barometer_entry = {
 	.newData = false,
 	.buffer = barometer_buffer,
-	.bufferSize = BAROMETER_BUFF_SIZE,
+	.bufferCapacity = BAROMETER_BUFF_SIZE,
+	.bufferSize = 0,
 };
 Acqbuff_Buffer acqbuff_Barometer = &barometer_entry;
 
@@ -68,7 +73,8 @@ static uint8_t gpsAltitude_buffer[GPSALTITUDE_BUFF_SIZE];
 static struct entry gpsAltitude_entry = {
 	.newData = false,
 	.buffer = gpsAltitude_buffer,
-	.bufferSize = GPSALTITUDE_BUFF_SIZE,
+	.bufferCapacity = GPSALTITUDE_BUFF_SIZE,
+	.bufferSize = 0,
 };
 Acqbuff_Buffer acqbuff_GPSAltitude = &gpsAltitude_entry;
 
@@ -76,7 +82,8 @@ static uint8_t gpsPosition_buffer[GPSPOSITION_BUFF_SIZE];
 static struct entry gpsPosition_entry = {
 	.newData = false,
 	.buffer = gpsPosition_buffer,
-	.bufferSize = GPSPOSITION_BUFF_SIZE,
+	.bufferCapacity = GPSPOSITION_BUFF_SIZE,
+	.bufferSize = 0,
 };
 Acqbuff_Buffer acqbuff_GPSPosition = &gpsPosition_entry;
 
@@ -84,7 +91,8 @@ static uint8_t accelerometer_buffer[ACCELEROMETER_BUFF_SIZE];
 static struct entry accelerometer_entry = {
 	.newData = false,
 	.buffer = accelerometer_buffer,
-	.bufferSize = ACCELEROMETER_BUFF_SIZE,
+	.bufferCapacity = ACCELEROMETER_BUFF_SIZE,
+	.bufferSize = 0,
 };
 Acqbuff_Buffer acqbuff_Accelerometer = &accelerometer_entry;
 
@@ -92,16 +100,42 @@ static uint8_t gyroscope_buffer[GYROSCOPE_BUFF_SIZE];
 static struct entry gyroscope_entry = {
 	.newData = false,
 	.buffer = gyroscope_buffer,
-	.bufferSize = GYROSCOPE_BUFF_SIZE,
+	.bufferCapacity = GYROSCOPE_BUFF_SIZE,
+	.bufferSize = 0,
 };
 Acqbuff_Buffer acqbuff_Gyroscope = &gyroscope_entry;
 
 
-int write(Acqbuff_Buffer buffer, uint8_t * data, size_t length);
+size_t write(Acqbuff_Buffer buffer, uint8_t * data, size_t count) {
+	struct entry * bufferEntry = (struct entry *) buffer;
+	
+	int i;
+	for (i = 0; i < count || i < bufferEntry->bufferCapacity; i++) {
+		(bufferEntry->buffer)[i] = data[i]; 
+	}
+	bufferEntry->newData = true;
+	bufferEntry->bufferSize = i;
+	
+	return (size_t) i;
+}
 
-size_t read(Acqbuff_Buffer buffer, uint8_t * data, size_t length); 
+size_t read(Acqbuff_Buffer buffer, uint8_t * data, size_t count) {
+	struct entry * bufferEntry = (struct entry *) buffer;
+	
+	int i;
+	for (i = 0; i < count || i < bufferEntry->bufferSize; i++) {
+		data[i] = (bufferEntry->buffer)[i];
+	}
+	bufferEntry->newData = false;
+	
+	return (size_t) i;
+}
 
-bool isNew(Acqbuff_Buffer buffer);
+bool isNew(Acqbuff_Buffer buffer) {
+	struct entry * bufferEntry = (struct entry *) buffer;
+	
+	return bufferEntry->newData;
+}
 
 
 
