@@ -24,14 +24,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef void * Acqbuff_Buffer;
+// TODO Stub size
+ 
+#define ACQBUFF_PITOT_BUFF_CAPACITY 32
+#define ACQBUFF_BAROMETER_BUFF_CAPACITY 32
+#define ACQBUFF_GPSALTITUDE_BUFF_CAPACITY 32 
+#define ACQBUFF_GPSPOSITION_BUFF_CAPACITY 64
+#define ACQBUFF_ACCELEROMETER_BUFF_CAPACITY 32
+#define ACQBUFF_GYROSCOPE_BUFF_CAPACITY 64
 
-extern Acqbuff_Buffer acqbuff_Pitot;
-extern Acqbuff_Buffer acqbuff_Barometer;
-extern Acqbuff_Buffer acqbuff_GPSAltitude;
-extern Acqbuff_Buffer acqbuff_GPSPosition;
-extern Acqbuff_Buffer acqbuff_Accelerometer;
-extern Acqbuff_Buffer acqbuff_Gyroscope;
+typedef void * AcqBuff_Buffer;
+
+extern AcqBuff_Buffer acqbuff_Pitot;
+extern AcqBuff_Buffer acqbuff_Barometer;
+extern AcqBuff_Buffer acqbuff_GPSAltitude;
+extern AcqBuff_Buffer acqbuff_GPSPosition;
+extern AcqBuff_Buffer acqbuff_Accelerometer;
+extern AcqBuff_Buffer acqbuff_Gyroscope;
 
 
 /**
@@ -40,18 +49,18 @@ extern Acqbuff_Buffer acqbuff_Gyroscope;
  * 
  * @return count written to buffer
  */
-size_t write(Acqbuff_Buffer buffer, uint8_t * data, size_t count);
+size_t acqBuff_write(AcqBuff_Buffer buffer, uint8_t * data, size_t count);
 
 /**
- * @brief Reads the buffer to data up to the specified length.
+ * @brief Reads the buffer to data up to the capacity of the buffer.
  * 
  * @return count read from buffer.
  */  
-size_t read(Acqbuff_Buffer buffer, uint8_t * data, size_t count); 
+size_t acqBuff_read(AcqBuff_Buffer buffer, uint8_t * data); 
 
 /**
  * @brief Returns true if the buffer has new data since the last read.
  */
-bool isNew(Acqbuff_Buffer buffer);
+bool acqBuff_isNew(AcqBuff_Buffer buffer);
 
 #endif /* __ACQ_BUFFERS_H */

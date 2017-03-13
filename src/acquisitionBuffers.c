@@ -19,17 +19,6 @@
  * Buffer size in bytes define
  */
 
-// TODO Stub size
- 
-#define PITOT_BUFF_SIZE 32
-#define BAROMETER_BUFF_SIZE 32
-#define GPSALTITUDE_BUFF_SIZE 32 
-#define GPSPOSITION_BUFF_SIZE 64
-#define ACCELEROMETER_BUFF_SIZE 32
-#define GYROSCOPE_BUFF_SIZE 64
-
-
-
 struct entry {
 	bool newData;
 	uint8_t * buffer;
@@ -42,71 +31,71 @@ struct entry {
  * 
  * Enter them as follow:
  * 
- * 		static uint8_t sensor_buffer[SENSOR_BUFF_SIZE];
+ * 		static uint8_t sensor_buffer[ACQBUFF_SENSOR_BUFF_CAPACITY];
  * 		static struct entry sensor_entry = {
  * 			.newData = false,
  * 			.buffer = sensor_buffer,
- * 			.bufferCapacity = SENSOR_BUFF_SIZE,
+ * 			.bufferCapacity = ACQBUFF_SENSOR_BUFF_CAPACITY,
  * 			.bufferSize = 0,
  * 		};
- * 		Acqbuff_Buffer acqbuff_Sensor = &sensor_entry;
+ * 		AcqBuff_Buffer acqbuff_Sensor = &sensor_entry;
  */
-static uint8_t pitot_buffer[PITOT_BUFF_SIZE];
+static uint8_t pitot_buffer[ACQBUFF_PITOT_BUFF_CAPACITY];
 static struct entry pitot_entry = {
 	.newData = false,
 	.buffer = pitot_buffer,
-	.bufferCapacity = PITOT_BUFF_SIZE,
+	.bufferCapacity = ACQBUFF_PITOT_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-Acqbuff_Buffer acqbuff_Pitot = &pitot_entry;
+AcqBuff_Buffer acqbuff_Pitot = &pitot_entry;
 
-static uint8_t barometer_buffer[BAROMETER_BUFF_SIZE];
+static uint8_t barometer_buffer[ACQBUFF_BAROMETER_BUFF_CAPACITY];
 static struct entry barometer_entry = {
 	.newData = false,
 	.buffer = barometer_buffer,
-	.bufferCapacity = BAROMETER_BUFF_SIZE,
+	.bufferCapacity = ACQBUFF_BAROMETER_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-Acqbuff_Buffer acqbuff_Barometer = &barometer_entry;
+AcqBuff_Buffer acqbuff_Barometer = &barometer_entry;
 
-static uint8_t gpsAltitude_buffer[GPSALTITUDE_BUFF_SIZE];
+static uint8_t gpsAltitude_buffer[ACQBUFF_GPSALTITUDE_BUFF_CAPACITY];
 static struct entry gpsAltitude_entry = {
 	.newData = false,
 	.buffer = gpsAltitude_buffer,
-	.bufferCapacity = GPSALTITUDE_BUFF_SIZE,
+	.bufferCapacity = ACQBUFF_GPSALTITUDE_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-Acqbuff_Buffer acqbuff_GPSAltitude = &gpsAltitude_entry;
+AcqBuff_Buffer acqbuff_GPSAltitude = &gpsAltitude_entry;
 
-static uint8_t gpsPosition_buffer[GPSPOSITION_BUFF_SIZE];
+static uint8_t gpsPosition_buffer[ACQBUFF_GPSPOSITION_BUFF_CAPACITY];
 static struct entry gpsPosition_entry = {
 	.newData = false,
 	.buffer = gpsPosition_buffer,
-	.bufferCapacity = GPSPOSITION_BUFF_SIZE,
+	.bufferCapacity = ACQBUFF_GPSPOSITION_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-Acqbuff_Buffer acqbuff_GPSPosition = &gpsPosition_entry;
+AcqBuff_Buffer acqbuff_GPSPosition = &gpsPosition_entry;
 
-static uint8_t accelerometer_buffer[ACCELEROMETER_BUFF_SIZE];
+static uint8_t accelerometer_buffer[ACQBUFF_ACCELEROMETER_BUFF_CAPACITY];
 static struct entry accelerometer_entry = {
 	.newData = false,
 	.buffer = accelerometer_buffer,
-	.bufferCapacity = ACCELEROMETER_BUFF_SIZE,
+	.bufferCapacity = ACQBUFF_ACCELEROMETER_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-Acqbuff_Buffer acqbuff_Accelerometer = &accelerometer_entry;
+AcqBuff_Buffer acqbuff_Accelerometer = &accelerometer_entry;
 
-static uint8_t gyroscope_buffer[GYROSCOPE_BUFF_SIZE];
+static uint8_t gyroscope_buffer[ACQBUFF_GYROSCOPE_BUFF_CAPACITY];
 static struct entry gyroscope_entry = {
 	.newData = false,
 	.buffer = gyroscope_buffer,
-	.bufferCapacity = GYROSCOPE_BUFF_SIZE,
+	.bufferCapacity = ACQBUFF_GYROSCOPE_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-Acqbuff_Buffer acqbuff_Gyroscope = &gyroscope_entry;
+AcqBuff_Buffer acqbuff_Gyroscope = &gyroscope_entry;
 
 
-size_t write(Acqbuff_Buffer buffer, uint8_t * data, size_t count) {
+size_t acqBuff_write(AcqBuff_Buffer buffer, uint8_t * data, size_t count) {
 	struct entry * bufferEntry = (struct entry *) buffer;
 	
 	int i;
@@ -119,19 +108,22 @@ size_t write(Acqbuff_Buffer buffer, uint8_t * data, size_t count) {
 	return (size_t) i;
 }
 
-size_t read(Acqbuff_Buffer buffer, uint8_t * data, size_t count) {
+size_t acqBuff_read(AcqBuff_Buffer buffer, uint8_t * data) {
 	struct entry * bufferEntry = (struct entry *) buffer;
 	
 	int i;
-	for (i = 0; i < count || i < bufferEntry->bufferSize; i++) {
+	for (i = 0; i < bufferEntry->bufferSize; i++) {
 		data[i] = (bufferEntry->buffer)[i];
 	}
-	bufferEntry->newData = false;
+	// reset the newData flag only if everything was read
+	if (i == bufferEntry->bufferSize) {
+		bufferEntry->newData = false;
+	}
 	
 	return (size_t) i;
 }
 
-bool isNew(Acqbuff_Buffer buffer) {
+bool acqBuff_isNew(AcqBuff_Buffer buffer) {
 	struct entry * bufferEntry = (struct entry *) buffer;
 	
 	return bufferEntry->newData;
