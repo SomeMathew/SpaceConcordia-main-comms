@@ -24,14 +24,69 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// TODO Stub size
- 
-#define ACQBUFF_PITOT_BUFF_CAPACITY 32
-#define ACQBUFF_BAROMETER_BUFF_CAPACITY 32
+/*
+ * ADC value
+ * 12 bit integer value
+ * 0 to 4095
+ * 
+ * 4 char total
+ */
+#define ACQBUFF_PITOT_BUFF_CAPACITY 8
+
+/*
+ * In Pa
+ * 18 bit uinteger value 
+ * 0 to 262143
+ * + 2 bit fractional
+ * 0.xx (.25 increment)
+ * 
+ * 9 char total
+ */
+#define ACQBUFF_BAROMETER_BUFF_CAPACITY 16
+
+/*
+ * 
+ */
 #define ACQBUFF_GPSALTITUDE_BUFF_CAPACITY 32 
-#define ACQBUFF_GPSPOSITION_BUFF_CAPACITY 64
-#define ACQBUFF_ACCELEROMETER_BUFF_CAPACITY 32
-#define ACQBUFF_GYROSCOPE_BUFF_CAPACITY 64
+
+/*
+ * Latitude in ddmm.mmmm format
+ * Leading zeros transmitted
+ * 
+ * Latitude hemisphere indicator
+ * ‘N’ = North
+ * ‘S’ = South
+ * 
+ * Longitude in dddmm.mmmm format
+ * Leading zeros transmitted
+ * 
+ * Longitude hemisphere indicator
+ * 'E' = East
+ * 'W' = West
+ * 
+ * Lat#LatInd#Long#LongInd
+ * 
+ * 24 char total
+ */
+#define ACQBUFF_GPSPOSITION_BUFF_CAPACITY 32
+
+/*
+ * 
+ * X#Y#Z where each is 16bit 2's complement
+ * Range: -32768 to 32767
+ * 
+ * 20 char total
+ */
+#define ACQBUFF_ACCELEROMETER_BUFF_CAPACITY 24
+
+/*
+ * 
+ * X#Y#Z where each is 16bit 2's complement
+ * Range: -32768 to 32767
+ * 
+ * 20 char total
+ */
+#define ACQBUFF_GYROSCOPE_BUFF_CAPACITY 24
 
 typedef void * AcqBuff_Buffer;
 
