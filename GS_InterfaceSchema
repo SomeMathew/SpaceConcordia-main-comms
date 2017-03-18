@@ -19,6 +19,8 @@ see acquisitionBuffers.h
 <msTick>,<pitot>,<bar>,<gpsAlt>,<gpsPos>,<accel>,<gyro>
 
 <msTick> : millisecond tick timestamp
+uint32 value
+0 to 4294967295
 
 <pitot> : pitot tube
 ADC value
@@ -35,6 +37,10 @@ In Pa
 
 
 <gpsAlt> : GPS altitude
+mean sea level (geoid), (-9999.9 ~ 17999.9)
+1 decimal place 
+7 char total
+
 
 
 <gpsPos> : GPS position

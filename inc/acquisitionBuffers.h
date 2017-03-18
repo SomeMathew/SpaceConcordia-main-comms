@@ -25,6 +25,14 @@
 #include <stdbool.h>
 
 /*
+ * uint32_t system tick in ms
+ * 0 to 4294967295
+ * 
+ * 10 char max
+ */
+#define ACQBUFF_TIMESTAMP_BUFF_CAPACITY 12
+
+/*
  * ADC value
  * 12 bit integer value
  * 0 to 4095
@@ -45,9 +53,11 @@
 #define ACQBUFF_BAROMETER_BUFF_CAPACITY 16
 
 /*
- * 
+ * mean sea level (geoid), (-9999.9 ~ 17999.9)
+ * 1 decimal place 
+ * 7 char total
  */
-#define ACQBUFF_GPSALTITUDE_BUFF_CAPACITY 32 
+#define ACQBUFF_GPSALTITUDE_BUFF_CAPACITY 8 
 
 /*
  * Latitude in ddmm.mmmm format
