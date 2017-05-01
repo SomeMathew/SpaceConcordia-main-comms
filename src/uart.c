@@ -67,8 +67,24 @@ static struct uart_Peripheral device_uart2 = {
 	},
 };
 
+static struct uart_Peripheral device_uart3 = {
+	.huart = {
+		.Instance = USART3,
+        .Init = {
+                .BaudRate = DEFAULT_BAUDRATE,
+                .WordLength = DEFAULT_WORDLENGTH,
+                .StopBits = DEFAULT_STOPBITS,
+                .Parity = DEFAULT_PARITY,
+                .Mode = DEFAULT_MODE,
+                .HwFlowCtl = DEFAULT_HWFLOWCTL,
+                .OverSampling = DEFAULT_OVERSAMPLING,
+        },
+	},
+};
+
 McuDevice_UART mcuDevice_serialPC = &device_uart2;
 McuDevice_UART mcuDevice_serialXBee = &device_uart1;
+McuDevice_UART mcuDevice_serialGPS = &device_uart3;
 
 static int sendBuffer(UART_HandleTypeDef * device, struct circularBuffer * buffer);
 
@@ -144,6 +160,11 @@ void USART1_IRQHandler(void) {
 void USART2_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&device_uart2.huart);
+}
+
+void USART3_IRQHandler(void)
+{
+	HAL_UART_IRQHandler(&device_uart3.huart);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {

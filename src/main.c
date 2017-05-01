@@ -56,12 +56,12 @@ int main(void) {
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
-	struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
+	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
 	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);
 	
-	struct task * xbeeTestTask = createTask(sendTestXbee, 0, NULL, 500, true, 0);
+	//~ struct task * xbeeTestTask = createTask(sendTestXbee, 0, NULL, 500, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();

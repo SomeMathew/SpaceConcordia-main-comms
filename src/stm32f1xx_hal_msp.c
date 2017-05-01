@@ -99,6 +99,30 @@ void HAL_UART_MspInit(UART_HandleTypeDef * huart) {
 		// Enable the NVIC for the usart1
 		HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
+		
+	} else 	if (huart->Instance == USART3_DEVICE) {
+		__HAL_RCC_USART3_CLK_ENABLE();
+		EnableGpioClock(USART3_RX_PORT);
+		EnableGpioClock(USART3_TX_PORT);
+		
+		GPIO_InitTypeDef gpioInit = {0};
+		
+		gpioInit.Pin = USART3_TX_PIN;
+		gpioInit.Mode = GPIO_MODE_AF_PP;
+		gpioInit.Pull = GPIO_PULLUP;
+		gpioInit.Speed = GPIO_SPEED_FREQ_HIGH;
+		
+		HAL_GPIO_Init(USART3_TX_PORT, &gpioInit);
+		
+		gpioInit.Pin = USART3_RX_PIN;
+		gpioInit.Mode = GPIO_MODE_AF_INPUT;
+		gpioInit.Pull = GPIO_NOPULL;
+		
+		HAL_GPIO_Init(USART3_RX_PORT, &gpioInit);
+		
+		// Enable the NVIC for the usart2
+		HAL_NVIC_SetPriority(USART3_IRQn, 0, 2);
+		HAL_NVIC_EnableIRQ(USART3_IRQn);
 	}
 }
 

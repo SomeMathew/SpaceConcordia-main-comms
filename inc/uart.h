@@ -52,6 +52,8 @@ size_t uart_write(McuDevice_UART UARTx, uint8_t * data, size_t size);
  */
  size_t uart_read(McuDevice_UART UARTx, uint8_t * data, size_t size);
 
+void USART3_IRQHandler(void);
 void USART2_IRQHandler(void);
+void USART1_IRQHandler(void);
 
 #endif /* __UART_H */
