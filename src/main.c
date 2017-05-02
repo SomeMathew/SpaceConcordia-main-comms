@@ -52,15 +52,17 @@ int main(void) {
 	logging_open(loggingStream);
 	commands_init(mcuDevice_serialPC);
 	
-	if (initTestXbee() == DRIVER_STATUS_ERROR) {
-		logging_send("Failed opening Xbee", MODULE_INDEX_XBEE, LOG_WARNING);
-	}
+	//~ if (initTestXbee() == DRIVER_STATUS_ERROR) {
+		//~ logging_send("Failed opening Xbee", MODULE_INDEX_XBEE, LOG_WARNING);
+	//~ }
 	
-	initTestGPS();
+	if (initTestGPS() == DRIVER_STATUS_ERROR) {
+			logging_send("Failed opening GPS", MODULE_INDEX_GPSTEST, LOG_WARNING);
+	}
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
-	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
+	struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
 	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);

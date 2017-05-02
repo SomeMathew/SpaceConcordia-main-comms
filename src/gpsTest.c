@@ -10,22 +10,17 @@ static McuDevice_UART gpsUartDevice = NULL;
 
 //~ static uint8_t buffer[MSG_MAX_LENGTH];
 
-bool runScheduler(void);
-struct task * createTask(void (*vector)(uint32_t, void *), uint32_t event, void * argument,
-		uint32_t timeInterval, bool repeat, uint8_t priority);
-bool destroyTask(struct task *);
-
-
 static void readUart(uint32_t p, void * arg) {
+	logging_send("In readUart", MODULE_INDEX_GPSTEST, LOG_DEBUG);
 	uint8_t buffer[MSG_MAX_LENGTH];
 	size_t readSize = uart_read(mcuDevice_serialPC, buffer, MSG_MAX_LENGTH - 1);
 	if (readSize > 0) {
 		buffer[readSize] = '\0';
 		logging_send((char *) buffer, MODULE_INDEX_GPSTEST, LOG_DEBUG);
 	}
+	//~ char test[20] = ito;
+	//~ logging_send("read size in readUart", MODULE_INDEX_GPSTEST, LOG_DEBUG);
 }
-
- size_t uart_read(McuDevice_UART UARTx, uint8_t * data, size_t size);
 
 int gpsTest_open(McuDevice_UART uartDevice) {
 	if (gpsUartDevice != NULL) {
@@ -34,7 +29,7 @@ int gpsTest_open(McuDevice_UART uartDevice) {
 	}
 	
 	gpsUartDevice = uartDevice;
-	reader = createTask(readUart, 0, NULL, 100, true, 2);
+	reader = createTask(readUart, 0, NULL, 200, true, 2);
 
 	return DRIVER_STATUS_OK;
 }
