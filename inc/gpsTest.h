@@ -1,14 +1,14 @@
 #ifndef __GPSTEST_H
 #define __GPSTEST_H
 
-#include "mcuDevice.h"
+#include "mcuDevices.h"
 
 /**
  * @brief Initialize the gpsTest module.
  * 
  * The UART should be opened and initialized by the user application.
  */
-void gpsTest_open(McuDevice_UART uartDevice);
+int gpsTest_open(McuDevice_UART uartDevice);
 
 /**
  * @brief Reads a line of data 

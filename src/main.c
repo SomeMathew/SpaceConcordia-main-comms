@@ -15,10 +15,12 @@
 #include "logging.h"
 #include "commands.h"
 #include "xbee.h"
+#include "gpsTest.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
 static void initTestUart(void);
+static int initTestGPS(void);
 static int	initTestXbee(void);
 
 
@@ -53,6 +55,8 @@ int main(void) {
 	if (initTestXbee() == DRIVER_STATUS_ERROR) {
 		logging_send("Failed opening Xbee", MODULE_INDEX_XBEE, LOG_WARNING);
 	}
+	
+	initTestGPS();
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
@@ -145,6 +149,18 @@ static int initTestXbee(void) {
 	
 	uart_open(mcuDevice_serialXBee, &setConfig);
 	return xbee_open(mcuDevice_serialXBee);
+}
+
+static int initTestGPS(void) {
+	struct uart_ioConf setConfig = {
+		.baudrate = GPS_CONF_BAUDRATE,
+		.parity = GPS_CONF_PARITY,
+		.wordlength = GPS_CONF_WORDLENGTH,
+		.stopbits = GPS_CONF_STOPBITS,
+	};
+	
+	uart_open(mcuDevice_serialGPS, &setConfig);
+	return gpsTest_open(mcuDevice_serialGPS);
 }
 
 static int loggingStream(uint8_t * data, size_t size) {
