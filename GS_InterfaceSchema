@@ -25,6 +25,7 @@ uint32 value
 <pitot> : pitot tube
 ADC value
 12 bit integer value
+Raw value transfered (see oleg for conversion)
 0 to 4095
 
 
@@ -33,6 +34,7 @@ In Pa
 18 bit uinteger value 
 0 to 262143
 + 2 bit fractional
+Data transfered through interface is the converted value
 0.xx (.25 increment)
 
 
@@ -63,9 +65,11 @@ Lat#LatInd#Long#LongInd
 
 <accel> : accelerometer
 X#Y#Z where each is 16bit 2's complement
+Data transfered through interface is just the converted value (not in 2's comp)
 Range: -32768 to 32767
 
 
 <gyro> : gyroscope
 X#Y#Z where each is 16bit 2's complement
+Data transfered through interface is just the converted value (not in 2's comp)
 Range: -32768 to 32767
