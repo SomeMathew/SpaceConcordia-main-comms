@@ -10,3 +10,6 @@
 *.elf
 *.bin
 *.map
+
+# Swap files for Vim users.
+*.swp
