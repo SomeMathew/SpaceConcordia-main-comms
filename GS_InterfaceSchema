@@ -64,12 +64,12 @@ Lat#LatInd#Long#LongInd
 
 
 <accel> : accelerometer
-X#Y#Z where each is 16bit 2's complement
-Data transfered through interface is just the converted value (not in 2's comp)
+X#Y#Z
+Data transfered through interface is just the converted value 
 Range: -32768 to 32767
 
 
 <gyro> : gyroscope
-X#Y#Z where each is 16bit 2's complement
-Data transfered through interface is just the converted value (not in 2's comp)
+X#Y#Z
+Data transfered through interface is just the converted value
 Range: -32768 to 32767
