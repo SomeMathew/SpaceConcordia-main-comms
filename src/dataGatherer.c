@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "acquisitionBuffers.h"
 #include "dataGatherer.h"
@@ -28,10 +29,11 @@ static size_t read_telem_data(void) {
 		acqbuff_Accelerometer,
 		acqbuff_Gyroscope
 	};
-	uint8_t * end = telem_packet_buff;
+	uint8_t * end = telem_packet_buff; // Points past the end of the buffer.
 
+	// Add msTick.
 	const uint32_t time = sysTimer_GetTick();
-	// TODO add the time.
+	end += sprintf(end, "%u,", time) - 1; // Subtraction to remove nul character.
 
 	// Iterate over all acquisition buffers and read them into the
 	// telemetry packet buffer, separating the contents of each buffer with
@@ -39,7 +41,6 @@ static size_t read_telem_data(void) {
 	for (size_t i = 0; i < sizeof(buffers) / sizeof(AcqBuff_Buffer); ++i) {
 		end += acqBuff_read(buffers[i], end);
 		*end++ = ',';
-
 	}
 
 	// Replace the trailing comma with a newline.
