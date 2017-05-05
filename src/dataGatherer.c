@@ -20,30 +20,30 @@
 
 static uint8_t telem_packet_buff[TELEM_PACKET_BUFF_CAPACITY];
 static size_t read_telem_data(void) {
-	uint8_t * current = telem_packet_buff;
+	const AcqBuff_Buffer buffers[] = {
+		acqbuff_Pitot;
+		acqbuff_Barometer,
+		acqbuff_GPSAltitude,
+		acqbuff_GPSPosition,
+		acqbuff_Accelerometer,
+		acqbuff_Gyroscope
+	};
+	uint8_t * end = telem_packet_buff;
 
 	const uint32_t time = sysTimer_GetTick();
 	// TODO add the time.
 
-	current += acqBuff_read(acqbuff_Pitot, current);
-	*current++ = ',';
+	// Iterate over all acquisition buffers and read them into the
+	// telemetry packet buffer, separating the contents of each buffer with
+	// a comma.
+	for (size_t i = 0; i < sizeof(buffers) / sizeof(AcqBuff_Buffer); ++i) {
+		end += acqBuff_read(buffers[i], end);
+		*end++ = ',';
 
-	current += acqBuff_read(acqbuff_Barometer);
-	*current++ = ',';
+	}
 
-	current += acqBuff_read(acqbuff_GPSAltitude);
-	*current++ = ',';
+	// Replace the trailing comma with a newline.
+	*(end - 1) = '\n';
 
-	current += acqBuff_read(acqbuff_GPSPosition);
-	*current++ = ',';
-
-	current += acqBuff_read(acqbuff_Accelerometer);
-	*current++ = ',';
-
-	current += acqBuff_read(acqbuff_Gyroscope);
-	*current++ = ',';
-
-	*current++ = '\n';
-
-	return current - telem_packet_buff;
+	return end - telem_packet_buff;
 }
