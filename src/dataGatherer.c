@@ -16,13 +16,15 @@
 	 ACQBUFF_BAROMETER_BUFF_CAPACITY + ACQBUFF_GPSALTITUDE_BUFF_CAPACITY +     \
 	 ACQBUFF_GPSPOSITION_BUFF_CAPACITY + ACQBUFF_ACCELEROMETER_BUFF_CAPACITY + \
 	 ACQBUFF_GYROSCOPE_BUFF_CAPACITY)
+#define DATA_GATHERER_TIME_INTERVAL 20
+#define DATA_GATHERER_PRIORITY 2
 
 static size_t  telem_packet_buff_size;
 static uint8_t telem_packet_buff[TELEM_PACKET_BUFF_CAPACITY];
 
 static void read_telem_data(void);
 static int  send_telem_xbee(void);
-static void read_and_send_telem(uint32_t, void *);
+static void read_and_send_telem(uint32_t, void*);
 
 void data_gatherer_init(void);
 
@@ -58,7 +60,16 @@ static int send_telem_xbee(void) {
 	return xbee_write(telem_packet_buff, telem_packet_buff_size);
 }
 
-static void read_and_send_telem(uint32_t, void *) {
+static void read_and_send_telem(uint32_t, void*) {
 	read_telem_data();
 	send_telem_xbee();
+}
+
+void data_gatherer_init(void) {
+	createTask(read_and_send_elem,
+	           0,
+	           NULL,
+	           DATA_GATHERER_TIME_INTERVAL,
+	           true,
+	           DATA_GATHERER_PRIORITY);
 }

@@ -10,4 +10,6 @@
 #ifndef DATAGATHERER_H_
 #define DATAGATHERER_H_
 
+void data_gatherer_init(void);
+
 #endif /* DATAGATHERER_H_ */
