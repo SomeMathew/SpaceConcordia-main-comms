@@ -34,6 +34,7 @@ static size_t read_telem_data() {
 	const uint32_t time = sysTimer_GetTick();
 	end += sprintf(end, "%u,", time) - 1; // Subtraction to remove null
 	                                      // character.
+	*end++ = ',';
 
 	// Iterate over all acquisition buffers and read them into the
 	// telemetry packet buffer, separating the contents of each buffer with
