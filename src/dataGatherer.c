@@ -1,5 +1,16 @@
 /*
- * TODO add module level documentation
+ * dataGatherer.c
+ *
+ * Created on: May 5, 2017
+ * Author: Alessandro Power
+ *
+ * read_telem_data: Reads the data from the acquisition buffers and stores them
+ * in a global packet buffer.
+ *
+ * send_telem_xbee: Sends the data in the global packet buffer to the xbee.
+ *
+ * read_and_send_telem: Reads the acquisition buffers and sends their data to
+ * the xbee. Function signature matches that expected by the scheduler.
  */
 
 #include <stddef.h>
@@ -66,7 +77,7 @@ static void read_and_send_telem(uint32_t, void*) {
 }
 
 void data_gatherer_init(void) {
-	createTask(read_and_send_elem,
+	createTask(read_and_send_telem,
 	           0,
 	           NULL,
 	           DATA_GATHERER_TIME_INTERVAL,
