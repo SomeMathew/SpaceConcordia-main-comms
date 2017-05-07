@@ -94,7 +94,10 @@ static int send_telem_xbee(void) {
 	return xbee_write(telem_packet_buff, telem_packet_buff_size);
 }
 
-static void read_and_send_telem(uint32_t, void*) {
+static void read_and_send_telem(uint32_t event, void* arg) {
+	UNUSED(arg);
+	UNUSED(event);
+		
 	read_telem_data();
 	if (send_telem_xbee() == DRIVER_STATUS_ERROR) {
 		logging_send("Could not send telemetry data to xbee.",
