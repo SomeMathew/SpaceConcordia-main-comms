@@ -32,6 +32,7 @@
 // Module index for logging control
 
 #define MODULE_INDEX_MAINTEST 0
+#define MODULE_INDEX_DATA_GATHERER 1
 #define MODULE_INDEX_XBEE 2
 
 // Device drivers and GPIO configurations

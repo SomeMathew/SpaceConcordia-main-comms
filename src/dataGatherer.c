@@ -12,6 +12,8 @@
  * in a global packet buffer.
  *
  * send_telem_xbee: Sends the data in the global packet buffer to the xbee.
+ * Returns DRIVER_STATUS_OK if the write was successful, DRIVER_STATUS_FAILURE
+ * otherwise.
  *
  * read_and_send_telem: Reads the acquisition buffers and sends their data to
  * the xbee. Function signature matches that expected by the scheduler.
@@ -23,6 +25,7 @@
 
 #include "acquisitionBuffers.h"
 #include "dataGatherer.h"
+#include "logging.h"
 #include "sysTimer.h"
 #include "xbee.h"
 
@@ -53,9 +56,7 @@ static size_t ui2ascii(uint32_t n, uint8_t* buffer) {
 		++i;
 	} while (n);
 
-	while (i) {
-		buffer[j++] = reverse_digits[i--];
-	}
+	while (i) { buffer[j++] = reverse_digits[i--]; }
 
 	return j;
 }
@@ -95,7 +96,11 @@ static int send_telem_xbee(void) {
 
 static void read_and_send_telem(uint32_t, void*) {
 	read_telem_data();
-	send_telem_xbee();
+	if (send_telem_xbee() == DRIVER_STATUS_ERROR) {
+		logging_send("Could not send telemetry data to xbee.",
+		             MODULE_INDEX_DATA_GATHERER,
+		             LOG_CRITICAL);
+	}
 }
 
 void data_gatherer_init(void) {
