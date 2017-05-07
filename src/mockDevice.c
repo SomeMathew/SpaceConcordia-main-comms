@@ -32,16 +32,7 @@ char dummy_buffer[DUMMY_BUFFER_SIZE];
 
 static struct task * mockTask = NULL;
 
-static AcqBuff_Buffer acqBuff_list[] = { acqbuff_Pitot,
-										 acqbuff_Barometer,
-										 acqbuff_GPSAltitude,
-										 acqbuff_GPSPosition,
-										 acqbuff_Accelerometer,
-										 acqbuff_Gyroscope
-										};
-static size_t acqBuff_collections_size = LENGTH_OF_ARRAY(acqBuff_list);
-
-static void loop(uint8_t event, void * args);
+static void loop(uint32_t event, void * args);
 
 void mockGatherer_init() {
 	mockTask = createTask(loop, 0, NULL, LOOP_MS_INTERVAL, true, 2);
@@ -58,6 +49,6 @@ static void fillBuffers() {
 }
 
 
-static void loop(uint8_t event, void * args) {
+static void loop(uint32_t event, void * args) {
 	fillBuffers();
 }
