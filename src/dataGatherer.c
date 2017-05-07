@@ -56,7 +56,7 @@ static size_t ui2ascii(uint32_t n, uint8_t* buffer) {
 		++i;
 	} while (n);
 
-	while (i) { buffer[j++] = reverse_digits[i--]; }
+	while (i) buffer[j++] = reverse_digits[i--];
 
 	return j;
 }
