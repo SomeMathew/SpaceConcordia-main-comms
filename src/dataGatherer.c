@@ -4,6 +4,10 @@
  * Created on: May 5, 2017
  * Author: Alessandro Power
  *
+ * ui2ascii: Converts an unsigned integer to a string of ASCII characters, which
+ * are stored in a provided buffer. The number of characters written is
+ * returned. Note that a null character is *not* written.
+ *
  * read_telem_data: Reads the data from the acquisition buffers and stores them
  * in a global packet buffer.
  *
@@ -13,9 +17,9 @@
  * the xbee. Function signature matches that expected by the scheduler.
  */
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "acquisitionBuffers.h"
 #include "dataGatherer.h"
@@ -33,11 +37,28 @@
 static size_t  telem_packet_buff_size;
 static uint8_t telem_packet_buff[TELEM_PACKET_BUFF_CAPACITY];
 
+static size_t ui2ascii(uint32_t n, uint8_t* buffer);
 static void read_telem_data(void);
 static int  send_telem_xbee(void);
 static void read_and_send_telem(uint32_t, void*);
 
 void data_gatherer_init(void);
+
+static size_t ui2ascii(uint32_t n, uint8_t* buffer) {
+	uint8_t reverse_digits[10];
+	size_t  i = 0, j = 0;
+	do {
+		reverse_digits[i] = '0' + n % 10;
+		n /= 10;
+		++i;
+	} while (n);
+
+	while (i) {
+		buffer[j++] = reverse_digits[i--];
+	}
+
+	return j;
+}
 
 static void read_telem_data(void) {
 	const AcqBuff_Buffer buffers[] = {acqbuff_Pitot,
@@ -51,7 +72,8 @@ static void read_telem_data(void) {
 
 	// Add msTick.
 	const uint32_t time = sysTimer_GetTick();
-	end += sprintf(end, "%u,", time);
+	end += ui2ascii(time, end);
+	*end++ = ',';
 
 	// Iterate over all acquisition buffers and read them into the
 	// telemetry packet buffer, separating the contents of each buffer with
