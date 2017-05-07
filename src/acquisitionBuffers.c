@@ -47,7 +47,7 @@ static struct entry timestamp_entry = {
 	.bufferCapacity = ACQBUFF_TIMESTAMP_BUFF_CAPACITY,
 	.bufferSize = 0,
 };
-AcqBuff_Buffer acqbuff_Barometer = &barometer_entry;
+AcqBuff_Buffer acqbuff_Timestamp = &timestamp_entry;
  
 static uint8_t pitot_buffer[ACQBUFF_PITOT_BUFF_CAPACITY];
 static struct entry pitot_entry = {
