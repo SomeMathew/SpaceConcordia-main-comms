@@ -8,6 +8,6 @@
 #ifndef MOCK_GATHERER_H_
 #define MOCK_GATHERER_H_
 
-void mockGatherer_init();
+void mockDevice_init();
 
 #endif /* __ACQ_BUFFERS_H */

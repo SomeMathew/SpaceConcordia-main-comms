@@ -8,6 +8,7 @@
 
 #include "main.h"
 #include "xbee.h"
+#include "mockDevice.h"
 #include "acquisitionBuffers.h"
 #include "sysTimer.h"
 
@@ -23,9 +24,9 @@
 char DUMMY_FIX_PITOT[] = "2048";
 char DUMMY_FIX_BAROMETER[] = "99325";
 char DUMMY_FIX_GPS_ALTITUDE[] = "167.8";
-char DUMMY_FIX_GPS_POSITION[] = "4529.8363#N#73#34.7414#W";
-char DUMMY_FIX_ACCELEROMETER[] = "0";
-char DUMMY_FIX_GYROSCOPE[] = "0";
+char DUMMY_FIX_GPS_POSITION[] = "4529.8360#N#7334.74137#W";
+char DUMMY_FIX_ACCELEROMETER[] = "101#101#101";
+char DUMMY_FIX_GYROSCOPE[] = "101#101#101";
 
 
 char dummy_buffer[DUMMY_BUFFER_SIZE];
@@ -34,7 +35,7 @@ static struct task * mockTask = NULL;
 
 static void loop(uint32_t event, void * args);
 
-void mockGatherer_init() {
+void mockDevice_init() {
 	mockTask = createTask(loop, 0, NULL, LOOP_MS_INTERVAL, true, 2);
 }
 
