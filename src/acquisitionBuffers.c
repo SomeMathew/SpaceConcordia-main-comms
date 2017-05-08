@@ -108,7 +108,7 @@ size_t acqBuff_write(AcqBuff_Buffer buffer, uint8_t * data, size_t count) {
 	struct entry * bufferEntry = (struct entry *) buffer;
 	
 	int i;
-	for (i = 0; i < count || i < bufferEntry->bufferCapacity; i++) {
+	for (i = 0; i < count && i < bufferEntry->bufferCapacity; i++) {
 		(bufferEntry->buffer)[i] = data[i]; 
 	}
 	bufferEntry->newData = true;
