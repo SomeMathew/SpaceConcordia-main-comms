@@ -49,16 +49,18 @@ void data_gatherer_init(void);
 
 static size_t ui2ascii(uint32_t n, uint8_t* buffer) {
 	uint8_t reverse_digits[10];
-	size_t  i = 0, j = 0;
+	size_t  i = 0;
 	do {
 		reverse_digits[i] = '0' + n % 10;
 		n /= 10;
 		++i;
 	} while (n);
 
-	while (i) buffer[j++] = reverse_digits[i--];
+	for (size_t j = 0; j < i; ++j) {
+		buffer[j] = reverse_digits[i - j - 1];
+	}
 
-	return j;
+	return i;
 }
 
 static void read_telem_data(void) {
