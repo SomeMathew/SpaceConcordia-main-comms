@@ -15,6 +15,8 @@
 #include "logging.h"
 #include "commands.h"
 #include "xbee.h"
+#include "mockDevice.h"
+#include "dataGatherer.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
@@ -53,6 +55,9 @@ int main(void) {
 	if (initTestXbee() == DRIVER_STATUS_ERROR) {
 		logging_send("Failed opening Xbee", MODULE_INDEX_XBEE, LOG_WARNING);
 	}
+	
+	mockDevice_init();
+	data_gatherer_init();
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
@@ -61,7 +66,7 @@ int main(void) {
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
 	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);
 	
-	struct task * xbeeTestTask = createTask(sendTestXbee, 0, NULL, 500, true, 0);
+	//~ struct task * xbeeTestTask = createTask(sendTestXbee, 0, NULL, 500, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();

@@ -1,0 +1,75 @@
+The interface of the telemetry system between the embedded component
+and the ground station is composed of a series of packets in ASCII
+format. This decision was done to simplify the transfer through the XBEE
+modules and for consistent handling of possible variations in 
+integer/float format between the system components. 
+
+The interface schema for the packet is in a fixed form, if one value
+hasn't updated between successive packets it should be identical to 
+the last one polled from the sensor.
+
+
+Schema:
+
+<> symbols are not to be sent, they are used as delimiter to describe
+the value. e.g <xxx> means xxx will be sent.
+For more details about their values in the embedded acquisition buffer
+see acquisitionBuffers.h
+
+<msTick>,<pitot>,<bar>,<gpsAlt>,<gpsPos>,<accel>,<gyro>
+
+<msTick> : millisecond tick timestamp
+uint32 value
+0 to 4294967295
+
+<pitot> : pitot tube
+ADC value
+12 bit integer value
+Raw value transfered (see oleg for conversion)
+0 to 4095
+
+
+<bar> : Barometer 
+In Pa
+18 bit uinteger value 
+0 to 262143
++ 2 bit fractional
+Data transfered through interface is the converted value
+0.xx (.25 increment)
+
+
+<gpsAlt> : GPS altitude
+mean sea level (geoid), (-9999.9 ~ 17999.9)
+1 decimal place 
+7 char total
+
+
+
+<gpsPos> : GPS position
+Latitude in ddmm.mmmm format
+Leading zeros transmitted
+
+Latitude hemisphere indicator
+‘N’ = North
+‘S’ = South
+
+Longitude in dddmm.mmmm format
+Leading zeros transmitted
+
+Longitude hemisphere indicator
+'E' = East
+'W' = West
+
+Lat#LatInd#Long#LongInd
+
+
+<accel> : accelerometer
+X#Y#Z
+Data transfered through interface is just the converted value 
+Range: -32768 to 32767
+
+
+<gyro> : gyroscope
+X#Y#Z
+Data transfered through interface is just the converted value
+Range: -32768 to 32767
