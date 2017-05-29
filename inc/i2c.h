@@ -10,7 +10,7 @@
 #define __I2C_H
 
 #include "stm32f1xx.h"
-#include "mcuDevice.h"
+#include "mcuDevices.h"
 
 enum i2c_status {
 	I2C_STATUS_BUSY = -2,
@@ -37,18 +37,18 @@ enum i2c_addressing_mode {
 enum i2c_busSetMask {
 	I2C_BUSSET_CLOCKSPEED = 0x01,
 	I2C_BUSSET_TRANSFERMODE = 0x02,
-	I2C_BUSSET_ADRESSINGMODE = 0x04,
-}
+	I2C_BUSSET_ADDRESSINGMODE = 0x04,
+};
 
 enum i2c_slaveSetMask {
-	I2C_SLAVESET_ADRESS = 0x01,
+	I2C_SLAVESET_ADDRESS = 0x01,
 	I2C_SLAVESET_CALLBACK = 0x02,
 };
 
 struct i2c_busConf {
     uint32_t clockSpeed; // max 400khz
-    enum I2C_MODE transferMode;
-    enum I2C_ADDRESSING_MODE adressingMode;
+    enum i2c_mode transferMode;
+    enum i2c_addressing_mode addressingMode;
 };
 
 struct i2c_slaveConf {
@@ -60,18 +60,20 @@ struct i2c_slaveDevice {
 	uint8_t address; // in 8 bit format (<7bit addr> << 1)
 	McuDevice_I2C bus;
 	void (*callback)(uint32_t, void *);
-}
+};
 
-enum i2c_status i2c_open(McuDevice_I2C bus, i2c_busConf * conf);
-enum i2c_status i2c_ioctl_setBus(McuDevice_I2C bus, int busSetMask, i2c_busConf * conf); 
+enum i2c_status i2c_open(McuDevice_I2C bus, struct i2c_busConf * conf);
+enum i2c_status i2c_ioctl_setBus(McuDevice_I2C bus, int busSetMask, struct i2c_busConf * conf); 
 enum i2c_status i2c_ioctl_setSlave(McuDevice_I2C bus, struct i2c_slaveDevice * slave, 
 		int slaveSetMask, struct i2c_slaveConf); 
 		
-enum i2c_status i2c_write(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
-enum i2c_status i2c_read(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
-enum i2c_status i2c_start(struct i2c_slaveDevice * slave);
-enum i2c_status i2c_stop(struct i2c_slaveDevice * slave);
+//~ enum i2c_status i2c_write(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
+//~ enum i2c_status i2c_read(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
+//~ enum i2c_status i2c_start(struct i2c_slaveDevice * slave);
+//~ enum i2c_status i2c_stop(struct i2c_slaveDevice * slave);
 
+/**
+ * @brief Write a specified register to the slave device, 
 enum i2c_status i2c_writeRegister(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
 enum i2c_status i2c_readRegister(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
 
