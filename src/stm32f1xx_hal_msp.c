@@ -138,9 +138,33 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 		HAL_NVIC_SetPriority(I2C2_EV_IRQn, 0, 2);
 		HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
 		HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
+	} else if (hi2c->Instance == I2C1_DEVICE) {
+		__HAL_RCC_I2C1_CLK_ENABLE();
+		EnableGpioClock(I2C1_SCL_PORT);
+		EnableGpioClock(I2C1_SDA_PORT);
+		
+		// Initialize the SCL pin
+		GPIO_InitTypeDef gpioInit = {0};
+		
+		gpioInit.Pin = I2C1_SCL_PIN;
+		gpioInit.Mode = GPIO_MODE_AF_OD;
+		gpioInit.Pull = GPIO_PULLUP;
+		gpioInit.Speed = GPIO_SPEED_FREQ_HIGH;
+		
+		HAL_GPIO_Init(I2C1_SCL_PORT, &gpioInit);
+		
+		// Initialize the SDA pin, settings the same as SCL (OD, Pullup)
+		gpioInit.Pin = I2C1_SDA_PIN;
+		
+		HAL_GPIO_Init(I2C1_SDA_PORT, &gpioInit);
+		
+		// No DMA for I2C2 Set for interrupt based transfer
+		// TODO: Add possibility for a DMA define in pinmapping to activate it.
+		HAL_NVIC_SetPriority(I2C1_ER_IRQn, 0, 1);
+		HAL_NVIC_SetPriority(I2C1_EV_IRQn, 0, 2);
+		HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
+		HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
 	}
-	
-	// TODO I2C1, with DMA transfer.
 }
 
 /**
