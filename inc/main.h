@@ -34,6 +34,7 @@
 #define MODULE_INDEX_MAINTEST 0
 #define MODULE_INDEX_DATA_GATHERER 1
 #define MODULE_INDEX_XBEE 2
+#define MODULE_INDEX_I2C 3
 
 // Device drivers and GPIO configurations
 // TODO more clean implementation or move to an other module?
