@@ -12,14 +12,14 @@ ASFLAGS = -g
 # object files
 
 USROBJS = main.o sysTimer.o scheduler.o linkedList.o \
-		  uart.o logging.o circularBuffer.o commands.o \
+		  uart.o i2c.o logging.o circularBuffer.o commands.o \
 		  xbee.o acquisitionBuffers.o mockDevice.o dataGatherer.o
 
 OBJS = $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) $(USROBJS))
 
 HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_rcc.o \
            stm32f1xx_hal.o stm32f1xx_hal_cortex.o stm32f1xx_hal_msp.o \
-           stm32f1xx_hal_uart.o
+           stm32f1xx_hal_uart.o stm32f1xx_hal_i2c.o
 
 # name of executable
 

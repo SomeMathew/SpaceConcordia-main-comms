@@ -19,7 +19,8 @@ enum i2c_status {
 };
 
 enum i2c_event {
-	I2C_EVENT_TRANSFER_DONE,
+	I2C_EVENT_TX_TRANSFER_DONE,
+	I2C_EVENT_RX_TRANSFER_DONE,
 	I2C_EVENT_ERROR,
 };
 
@@ -32,6 +33,11 @@ enum i2c_mode {
 enum i2c_addressing_mode {
 	I2C_ADDRESS_7BIT,
 	I2C_ADDRESS_10BIT,
+};
+
+enum i2c_addressSize {
+	I2C_ADDRESS_SIZE_8BIT = I2C_MEMADD_SIZE_8BIT,
+	I2C_ADDRESS_SIZE_16BIT = I2C_MEMADD_SIZE_16BIT,
 };
 
 enum i2c_busSetMask {
@@ -58,23 +64,32 @@ struct i2c_slaveConf {
 
 struct i2c_slaveDevice {
 	uint8_t address; // in 8 bit format (<7bit addr> << 1)
-	McuDevice_I2C bus;
 	void (*callback)(uint32_t, void *);
+	McuDevice_I2C bus;
 };
 
-enum i2c_status i2c_open(McuDevice_I2C bus, struct i2c_busConf * conf);
-enum i2c_status i2c_ioctl_setBus(McuDevice_I2C bus, int busSetMask, struct i2c_busConf * conf); 
-enum i2c_status i2c_ioctl_setSlave(McuDevice_I2C bus, struct i2c_slaveDevice * slave, 
-		int slaveSetMask, struct i2c_slaveConf); 
+int i2c_open(McuDevice_I2C bus, struct i2c_busConf * conf);
+//~ int i2c_ioctl_setBus(McuDevice_I2C bus, int busSetMask, struct i2c_busConf * conf); 
+int i2c_ioctl_setSlave(McuDevice_I2C bus, struct i2c_slaveDevice * slave, 
+		int slaveSetMask, struct i2c_slaveConf * conf); 
 		
-//~ enum i2c_status i2c_write(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
-//~ enum i2c_status i2c_read(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
-//~ enum i2c_status i2c_start(struct i2c_slaveDevice * slave);
-//~ enum i2c_status i2c_stop(struct i2c_slaveDevice * slave);
+//~ int i2c_write(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
+//~ int i2c_read(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
+//~ int i2c_start(struct i2c_slaveDevice * slave);
+//~ int i2c_stop(struct i2c_slaveDevice * slave);
 
 /**
- * @brief Write a specified register to the slave device, 
-enum i2c_status i2c_writeRegister(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
-enum i2c_status i2c_readRegister(struct i2c_slaveDevice * slave, uint8_t * data, size_t size);
+ * @brief Write a specified register to the slave device.
+ */
+int i2c_writeRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
+		enum i2c_addressSize addSize, uint8_t * data, size_t size);
+
+/**
+ * @brief Read a specified register from the slave device. 
+ * 
+ * This is a non-blocking read, the callback vector of the slave will be called when the transfer is completed.
+ */
+int i2c_readRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, enum i2c_addressSize addSize, 
+		uint8_t * data, size_t size);
 
 #endif /* __I2C_H */
