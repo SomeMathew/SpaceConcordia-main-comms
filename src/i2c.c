@@ -112,7 +112,7 @@ int i2c_ioctl_setSlave(McuDevice_I2C bus, struct i2c_slaveDevice * slave,
 		int slaveSetMask, struct i2c_slaveConf * conf) {
 	slave->bus = bus;
 	if (slaveSetMask & I2C_SLAVESET_ADDRESS) {
-		slave->address = conf->address; 
+		slave->address = ((conf->address) << 1); 
 	}
 	
 	if (slaveSetMask & I2C_SLAVESET_CALLBACK) {

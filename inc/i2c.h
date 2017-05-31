@@ -4,6 +4,7 @@
  * @author Mathieu Breault
  * @brief Interrupt or DMA based i2c device driver.
  * 
+ * NOTE: Currently only the interrupt based transfer is implemented. 
  */
 
 #ifndef __I2C_H
@@ -26,8 +27,8 @@ enum i2c_event {
 
 enum i2c_mode {
 	I2C_MODE_IT,
-	I2C_MODE_DMA,
-	I2C_MODE_POLLING,
+	I2C_MODE_DMA, // unavailable
+	I2C_MODE_POLLING, // unavailable
 };
 
 enum i2c_addressing_mode {
@@ -53,12 +54,12 @@ enum i2c_slaveSetMask {
 
 struct i2c_busConf {
     uint32_t clockSpeed; // max 400khz
-    enum i2c_mode transferMode;
+    enum i2c_mode transferMode; // currently only IT works
     enum i2c_addressing_mode addressingMode;
 };
 
 struct i2c_slaveConf {
-	uint16_t address;
+	uint16_t address; // give in 7 bit format
 	void (*callback)(uint32_t, void *);
 };
 
