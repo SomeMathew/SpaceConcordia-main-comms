@@ -13,7 +13,8 @@ ASFLAGS = -g
 
 USROBJS = main.o sysTimer.o scheduler.o linkedList.o \
 		  uart.o i2c.o logging.o circularBuffer.o commands.o \
-		  xbee.o acquisitionBuffers.o mockDevice.o dataGatherer.o
+		  xbee.o acquisitionBuffers.o mockDevice.o dataGatherer.o \
+		  LSM303DLHC.o
 
 OBJS = $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) $(USROBJS))
 
