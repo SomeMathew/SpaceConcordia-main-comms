@@ -14,8 +14,5 @@ void init_pitot(void) {
 	spi_init.CLKPhase    = SPI_PHASE1_EDGE;
 	spi_init.FirstBit    = SPI_FIRSTBIT_MSB;
 
-	if (HAL_SPI_INIT(&spi_handle) != HAL_OK) {
-		return false;
-	};
-	return true;
+	return HAL_SPI_INIT(&spi_handle) == HAL_OK:
 }
