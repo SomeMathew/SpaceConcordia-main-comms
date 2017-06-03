@@ -17,6 +17,8 @@
 #include "xbee.h"
 #include "mockDevice.h"
 #include "dataGatherer.h"
+#include "LSM303DLHC.h"
+#include "i2c.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
@@ -30,6 +32,7 @@ static void sendTestLog(uint32_t event, void * arg);
 static void sendTestXbee(uint32_t event, void * arg);
 static void changeTestLog(uint32_t event, void * arg);
 static void uartRead(uint32_t event, void * arg);
+static void testLSM303(uint32_t event, void * arg);
 static int loggingStream(uint8_t * data, size_t size);
 
 uint8_t testData[] = "test\n";
@@ -58,10 +61,22 @@ int main(void) {
 	
 	mockDevice_init();
 	data_gatherer_init();
+	
+	struct i2c_busConf i2cBusConfig = {
+		.clockSpeed = 400000,
+		.addressingMode = I2C_ADDRESSINGMODE_7BIT
+	};
+	
+	struct i2c_slaveDevice lsm303_accel_slaveDevice = {0};
+	
+	i2c_open(mcuDevice_i2cBus1, &i2cBusConfig);
+	lsm303dlhc_open(mcuDevice_i2cBus1, &lsm303_accel_slaveDevice, 500);
+	
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
 	struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
+	
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
 	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);

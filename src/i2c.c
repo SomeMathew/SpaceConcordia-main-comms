@@ -17,9 +17,11 @@
 #define DEFAULT_ADDRESS 0x30F
 #define DEFAULT_ADDRESSMODE I2C_ADDRESSINGMODE_7BIT
 #define DEFAULT_DUALADDRESSMODE I2C_DUALADDRESS_DISABLE
-#define DEFAULT_ADDRESS2 0xFF
+#define DEFAULT_ADDRESS2 0xFE
 #define DEFAULT_GENCALLMODE I2C_GENERALCALL_DISABLE
 #define DEFAULT_NOSTRETCHMODE I2C_NOSTRETCH_DISABLE
+
+#define BLOCKING_TIMEOUT_MS 500
 
 
 // Internal peripheral structure, hi2c Handle should be first to make
@@ -86,11 +88,11 @@ static inline int mapStatusFromHAL(HAL_StatusTypeDef status) {
 }
 
 int i2c_open(McuDevice_I2C bus, struct i2c_busConf * conf) {
-	I2C_HandleTypeDef * device = (I2C_HandleTypeDef *) bus;
-	device->Init.ClockSpeed = conf->clockSpeed;
-	setAddressingMode(device, conf->addressingMode);
+	struct i2c_Peripheral * device = (struct i2c_Peripheral *) bus;
+	//~ device->hi2c.Init.ClockSpeed = conf->clockSpeed;
+	//~ setAddressingMode(&(device->hi2c), conf->addressingMode);
 	
-	if (HAL_I2C_Init(device) == HAL_OK) {
+	if (HAL_I2C_Init(&(device->hi2c)) == HAL_OK) {
 		return I2C_STATUS_OK;
 	} else {
 		return I2C_STATUS_ERROR;
@@ -125,19 +127,37 @@ int i2c_ioctl_setSlave(McuDevice_I2C bus, struct i2c_slaveDevice * slave,
 
 int i2c_writeRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
 		enum i2c_addressSize addSize, uint8_t * data, size_t size) {
-	I2C_HandleTypeDef * device = (I2C_HandleTypeDef *) slave->bus;
+	struct i2c_Peripheral * device = (struct i2c_Peripheral *) slave->bus;
 	
-	int status = HAL_I2C_Mem_Write_IT(device, slave->address, memoryAddress, addSize, data, size);
+	int status = HAL_I2C_Mem_Write_IT(&(device->hi2c), slave->address, memoryAddress, addSize, data, size);
 	return mapStatusFromHAL(status);
 }
 
 int i2c_readRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, enum i2c_addressSize addSize, 
 		uint8_t * data, size_t size) {
-	I2C_HandleTypeDef * device = (I2C_HandleTypeDef *) slave->bus;
+	struct i2c_Peripheral * device = (struct i2c_Peripheral *) slave->bus;
 
-	((struct i2c_Peripheral *) slave->bus)->callback = slave->callback;
+	device->callback = slave->callback;
 	
-	int status = HAL_I2C_Mem_Read_IT(device, slave->address, memoryAddress, addSize, data, size);
+	int status = HAL_I2C_Mem_Read_IT(&(device->hi2c), slave->address, memoryAddress, addSize, data, size);
+	return mapStatusFromHAL(status);
+}
+
+int i2c_writeRegister_blocking(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
+		enum i2c_addressSize addSize, uint8_t * data, size_t size) {
+	struct i2c_Peripheral * device = (struct i2c_Peripheral *) slave->bus;
+	
+	int status = HAL_I2C_Mem_Write(&(device->hi2c), slave->address, memoryAddress, addSize, data, size, BLOCKING_TIMEOUT_MS);
+	return mapStatusFromHAL(status);
+}
+
+int i2c_readRegister_blocking(struct i2c_slaveDevice * slave, uint16_t memoryAddress, enum i2c_addressSize addSize, 
+		uint8_t * data, size_t size) {
+	struct i2c_Peripheral * device = (struct i2c_Peripheral *) slave->bus;
+
+	device->callback = slave->callback;
+	
+	int status = HAL_I2C_Mem_Read(&(device->hi2c), slave->address, memoryAddress, addSize, data, size, BLOCKING_TIMEOUT_MS);
 	return mapStatusFromHAL(status);
 }
 

@@ -81,6 +81,8 @@ int i2c_ioctl_setSlave(McuDevice_I2C bus, struct i2c_slaveDevice * slave,
 
 /**
  * @brief Write a specified register to the slave device.
+ * 
+ * This is a non-blocking write. No callback implemented
  */
 int i2c_writeRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
 		enum i2c_addressSize addSize, uint8_t * data, size_t size);
@@ -91,6 +93,22 @@ int i2c_writeRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress,
  * This is a non-blocking read, the callback vector of the slave will be called when the transfer is completed.
  */
 int i2c_readRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, enum i2c_addressSize addSize, 
+		uint8_t * data, size_t size);
+		
+/**
+ * @brief Write a specified register to the slave device.
+ * 
+ * This is a blocking write as a temporary work-around.
+ */
+int i2c_writeRegister_blocking(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
+		enum i2c_addressSize addSize, uint8_t * data, size_t size);
+
+/**
+ * @brief Read a specified register from the slave device. 
+ * 
+ * This is a blocking read as a temporary work-around.
+ */
+int i2c_readRegister_blocking(struct i2c_slaveDevice * slave, uint16_t memoryAddress, enum i2c_addressSize addSize, 
 		uint8_t * data, size_t size);
 
 #endif /* __I2C_H */

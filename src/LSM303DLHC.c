@@ -9,8 +9,11 @@
  */
 
 #include <stddef.h>
+#include <stdio.h>
+#include <inttypes.h>
 #include "LSM303DLHC.h"
 #include "scheduler.h"
+#include "logging.h"
 
 #define LSM303DLHC_ADDRESS_LIN_ACCEL (0b0011001)
 #define SEND_BUFFER_SIZE 32
@@ -50,6 +53,14 @@ enum accelRegisters    {
 	LSM303_REGISTER_ACCEL_TIME_WINDOW_A       = 0x3D
 };
 
+// ODR 50Hz; Normal Mode (Low-power disabled); Z, Y, Z enabled
+#define LSM303_CONFIG_CTRL_REG1 0x47
+
+// FS = 11 (+- 16g full scale); HR = 1 (high resolution enable)
+#define LSM303_CONFIG_CTRL_REG4 0x38
+
+
+
 static uint8_t buffer[32];
 
 struct task * runTask = NULL;
@@ -70,9 +81,17 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 	int i2c_writeRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
 		enum i2c_addressSize addSize, uint8_t * data, size_t size);
 		
-	uint8_t registerVal = 0x47;
-	i2c_writeRegister(device, LSM303_REGISTER_ACCEL_CTRL_REG1_A, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1);
+	uint8_t registerVal = LSM303_CONFIG_CTRL_REG1;
+	if (i2c_writeRegister_blocking(device, LSM303_REGISTER_ACCEL_CTRL_REG1_A, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1) != HAL_OK) {
+		logging_send("set creg1", MODULE_INDEX_LSM303, LOG_WARNING);
+		return DRIVER_STATUS_ERROR;
+	}
 	
+	registerVal = LSM303_CONFIG_CTRL_REG4;
+	if (i2c_writeRegister_blocking(device, LSM303_REGISTER_ACCEL_CTRL_REG4_A, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1) != HAL_OK) {
+		logging_send("set creg4", MODULE_INDEX_LSM303, LOG_WARNING);
+		return DRIVER_STATUS_ERROR;
+	}
 	
 	return DRIVER_STATUS_OK;
 }
@@ -82,8 +101,32 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
  */
 static void runLoop(uint32_t event, void * args) {
 	UNUSED(event);
+	char testBuffer[128];
+	struct i2c_slaveDevice * slaveDevice = (struct i2c_slaveDevice *) args;
 	
+	uint8_t x_low = 0, x_high = 0;
+	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_X_L_A, I2C_ADDRESS_SIZE_8BIT, &x_low, 1);
+	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_X_H_A, I2C_ADDRESS_SIZE_8BIT, &x_high, 1);
 	
+
+	sprintf(testBuffer, "%hhx %hhx", x_low, x_high);
+	logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
+	
+	uint8_t y_low = 0, y_high = 0;
+	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Y_L_A, I2C_ADDRESS_SIZE_8BIT, &y_low, 1);
+	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Y_H_A, I2C_ADDRESS_SIZE_8BIT, &y_high, 1);
+	
+
+	sprintf(testBuffer, "%hhx %hhx", y_low, y_high);
+	logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
+	
+	uint32_t x = 0, y = 0;
+	
+	x = ((uint32_t) x_high << 8) | (x_low);
+	y = ((uint32_t) y_high << 8) | (x_low);
+	
+	sprintf(testBuffer, 
+	logging_send(
 }
 
 static void i2cCallback(uint32_t event, void * args) {
