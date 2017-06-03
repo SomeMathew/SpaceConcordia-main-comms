@@ -75,7 +75,7 @@ int main(void) {
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
-	struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
+	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
 	
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
@@ -87,6 +87,22 @@ int main(void) {
 		runScheduler();
 		//~ HAL_Delay(5000);
 	}
+}
+
+size_t ui2ascii(uint32_t n, uint8_t* buffer) {
+	uint8_t reverse_digits[10];
+	size_t  i = 0;
+	do {
+		reverse_digits[i] = '0' + n % 10;
+		n /= 10;
+		++i;
+	} while (n);
+
+	for (size_t j = 0; j < i; ++j) {
+		buffer[j] = reverse_digits[i - j - 1];
+	}
+
+	return i;
 }
 
 static void blink(uint32_t event, void * arg) {

@@ -58,4 +58,10 @@ enum {
     DRIVER_STATUS_OK = 1,
 };
 
+/**
+ * @brief Converts an unsigned int to ASCII inside the buffer
+ * @returns the number of character written to buffer
+ */
+size_t ui2ascii(uint32_t n, uint8_t* buffer);
+
 #endif /* __MAIN_H */

@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "main.h"
 #include "acquisitionBuffers.h"
 #include "dataGatherer.h"
 #include "logging.h"
@@ -40,28 +41,11 @@
 static size_t  telem_packet_buff_size;
 static uint8_t telem_packet_buff[TELEM_PACKET_BUFF_CAPACITY];
 
-static size_t ui2ascii(uint32_t n, uint8_t* buffer);
 static void read_telem_data(void);
 static int  send_telem_xbee(void);
 static void read_and_send_telem(uint32_t, void*);
 
 void data_gatherer_init(void);
-
-static size_t ui2ascii(uint32_t n, uint8_t* buffer) {
-	uint8_t reverse_digits[10];
-	size_t  i = 0;
-	do {
-		reverse_digits[i] = '0' + n % 10;
-		n /= 10;
-		++i;
-	} while (n);
-
-	for (size_t j = 0; j < i; ++j) {
-		buffer[j] = reverse_digits[i - j - 1];
-	}
-
-	return i;
-}
 
 static void read_telem_data(void) {
 	const AcqBuff_Buffer buffers[] = {acqbuff_Pitot,
