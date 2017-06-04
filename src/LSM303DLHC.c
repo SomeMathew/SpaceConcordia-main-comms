@@ -56,8 +56,8 @@
 // ODR 50Hz; Normal Mode (Low-power disabled); Z, Y, Z enabled
 #define LSM303_CONFIG_CTRL_REG1 0x47
 
-// FS = 11 (+- 16g full scale); HR = 1 (high resolution enable)
-#define LSM303_CONFIG_CTRL_REG4 0x38
+// FS = 11 (+- 16g full scale); HR = 0 (high resolution disabled)
+#define LSM303_CONFIG_CTRL_REG4 0x30
 
 
 
@@ -76,8 +76,6 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 	};
 	i2c_ioctl_setSlave(bus, device, I2C_SLAVESET_ADDRESS | I2C_SLAVESET_CALLBACK, &config);
 	
-	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
-	
 	uint8_t registerVal = LSM303_CONFIG_CTRL_REG1;
 	if (i2c_writeRegister_blocking(device, LSM303_REGISTER_ACCEL_CTRL_REG1_A, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1) != I2C_STATUS_OK) {
 		logging_send("set creg1", MODULE_INDEX_LSM303, LOG_WARNING);
@@ -89,6 +87,8 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 		logging_send("set creg4", MODULE_INDEX_LSM303, LOG_WARNING);
 		return DRIVER_STATUS_ERROR;
 	}
+	
+	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
 	
 	return DRIVER_STATUS_OK;
 }
@@ -125,10 +125,10 @@ static void runLoop(uint32_t event, void * args) {
 	
 	int16_t x = 0, y = 0, z = 0;
 	
-	// Note : GCC - ARM keeps twos complement on right shift
-	x = (int16_t) (((uint16_t) x_high << 8) | (x_low)) >> 4;
-	y = (int16_t) (((uint16_t) y_high << 8) | (y_low)) >> 4;
-	z = (int16_t) (((uint16_t) z_high << 8) | (z_low)) >> 4;
+	// div by 16 since it is a left-aligned 12 bit number (undocumented) (safe >> 4 signed)
+	x = (int16_t) (((uint16_t) x_high << 8) | (x_low))/16;
+	y = (int16_t) (((uint16_t) y_high << 8) | (y_low))/16;
+	z = (int16_t) (((uint16_t) z_high << 8) | (z_low))/16;
 	
 	//~ sprintf(testBuffer, "x= %" PRId16 "; y= %" PRId16 "; z= %" PRId16, x, y, z);
 	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
