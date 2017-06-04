@@ -86,7 +86,7 @@ REGISTERS
 //Data flags enabled
 #define MPL3115A2_PT_DATA_CFG_VALUE	(MPL3115A2_PT_DATA_CFG_DREM |  MPL3115A2_PT_DATA_CFG_TDEFE | MPL3115A2_PT_DATA_CFG_PDEFE)
 // TimeOut for reset
-#define TIME_OUT_RESET 2000
+#define TIME_OUT_RESET 5000
 
 
 static uint8_t buffer[32];
@@ -109,19 +109,27 @@ int mpl3115a2_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t 
 	};
 	i2c_ioctl_setSlave(bus, device, I2C_SLAVESET_ADDRESS | I2C_SLAVESET_CALLBACK, &config);
 	
-	// Reset the device for known value
+	//~ // Reset the device for known value
 	uint8_t registerVal = MPL3115A2_CTRL_REG1_RST;
-	i2c_writeRegister_blocking(device, MPL3115A2_CTRL_REG1, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1);
+	//~ i2c_writeRegister_blocking(device, MPL3115A2_CTRL_REG1, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1);
 	// Wait for the RST bit to clear
 	uint32_t timeOutLimit = sysTimer_GetTick() + TIME_OUT_RESET;
 	do {
 		registerVal = i2c_readRegister_blocking(device, MPL3115A2_CTRL_REG1, I2C_ADDRESS_SIZE_8BIT, &registerVal, 1);
+		
+		sprintf(testBuffer, "ctrlReg1 %" PRIx8, registerVal);
+		logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
+		
 		registerVal &= MPL3115A2_CTRL_REG1_RST;
+		
+		sprintf(testBuffer, "ctrlReg1 new %" PRIx8, registerVal);
+		logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
+
 		if (timeIsAfter(sysTimer_GetTick(), timeOutLimit)) {
 			logging_send("timeOut rst MPL311", MODULE_INDEX_MPL311, LOG_CRITICAL);
 			return DRIVER_STATUS_ERROR;
 		} 
-	} while (registerVal != 0);
+	} while (registerVal);
 	
 	
 	registerVal = MPL3115A2_CTRL_REG1_VALUE;
@@ -172,31 +180,36 @@ static void runMPLLoop(uint32_t event, void * args) {
 	sprintf(testBuffer, "msb: %" PRIx8", csb: %" PRIx8 ", lsb: %" PRIx8, pMSB, pCSB, pLSB);
 	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
 	
-	//~ int i = 0;
+	uint32_t intPart = 0;
+	intPart = (pMSB << 10) | (pCSB << 2) | (pLSB >> 6);
 	
-	//~ if (x < 0) {
-		//~ buffer[i++] = '-';
-	//~ }
-	//~ uint32_t convertValue = (uint32_t) (x < 0) ? -x : x;
-	//~ i += ui2ascii(convertValue, buffer + i);
+	// Complement to a 32 bit neg number if it's negative
+	if (intPart & 0x20000) {
+		intPart |= 0xFFFE0000;
+	}
+	uint32_t fracPart = (pLSB >> 4) & 0x3;
 	
-	//~ buffer[i++] = '#';
+	int32_t decValue = (int32_t) intPart;
 	
-	//~ if (y < 0) {
-		//~ buffer[i++] = '-';
-	//~ }
-	//~ convertValue = (uint32_t) (y < 0) ? -y : y;
-	//~ i += ui2ascii(convertValue, buffer + i);
 	
-	//~ buffer[i++] = '#';
 	
-	//~ if (z < 0) {
-		//~ buffer[i++] = '-';
-	//~ }
-	//~ convertValue = (uint32_t) (z < 0) ? -z : z;
-	//~ i += ui2ascii(convertValue, buffer + i);
+	int i = 0;
 	
-	//~ acqBuff_write(acqbuff_Accelerometer, buffer, i);
+	if (decValue < 0) {
+		buffer[i++] = '-';
+	}
+	uint32_t convertValue = (uint32_t) (decValue < 0) ? -decValue : decValue;
+	i += ui2ascii(convertValue, buffer + i);
+	
+	buffer[i++] = '.';
+	
+	fracPart = 25 * fracPart;
+	i += ui2ascii(fracPart, buffer + i);
+	
+	sprintf(testBuffer, "bar val %" PRId32, convertValue);
+	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
+	
+	acqBuff_write(acqbuff_Barometer, buffer, i);
 }
 
 static void i2cCallback(uint32_t event, void * args) {
