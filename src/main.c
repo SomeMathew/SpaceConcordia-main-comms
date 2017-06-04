@@ -19,6 +19,7 @@
 #include "dataGatherer.h"
 #include "LSM303DLHC.h"
 #include "i2c.h"
+#include "MPL3115A2.h"
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
@@ -62,16 +63,22 @@ int main(void) {
 	mockDevice_init();
 	data_gatherer_init();
 	
-	struct i2c_busConf i2cBusConfig = {
+	struct i2c_busConf i2cBus1Config = {
 		.clockSpeed = 400000,
 		.addressingMode = I2C_ADDRESSINGMODE_7BIT
 	};
-	
 	struct i2c_slaveDevice lsm303_accel_slaveDevice = {0};
-	
-	i2c_open(mcuDevice_i2cBus1, &i2cBusConfig);
+	i2c_open(mcuDevice_i2cBus1, &i2cBus1Config);
 	lsm303dlhc_open(mcuDevice_i2cBus1, &lsm303_accel_slaveDevice, 500);
 	
+
+	struct i2c_busConf i2cBus2Config = {
+		.clockSpeed = 400000,
+		.addressingMode = I2C_ADDRESSINGMODE_7BIT
+	};
+	struct i2c_slaveDevice mpl311_barometer = {0};
+	i2c_open(mcuDevice_i2cBus2, &i2cBus2Config);
+	mpl3115a2_open(mcuDevice_i2cBus2, &mpl311_barometer, 500);
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 

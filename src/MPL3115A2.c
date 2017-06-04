@@ -91,11 +91,11 @@ REGISTERS
 
 static uint8_t buffer[32];
 
-struct task * runTask = NULL;
-//~ char testBuffer[128];
+static struct task * runTask = NULL;
+static char testBuffer[128];
 
 static void i2cCallback(uint32_t event, void * args);
-static void runLoop(uint32_t event, void * args);
+static void runMPLLoop(uint32_t event, void * args);
 
 static inline bool timeIsAfter(uint32_t a, uint32_t b) {
     return ((int32_t) (b - a) < 0);
@@ -142,7 +142,7 @@ int mpl3115a2_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t 
 		return DRIVER_STATUS_ERROR;
 	}
 	
-	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
+	runTask = createTask(runMPLLoop, 0, (void *) device, msInterval, true, 1);
 	
 	return DRIVER_STATUS_OK;
 }
@@ -150,77 +150,53 @@ int mpl3115a2_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t 
 /**
  * @param args will contain the struct i2c_slaveDevice *.
  */
-static void runLoop(uint32_t event, void * args) {
+static void runMPLLoop(uint32_t event, void * args) {
 	UNUSED(event);
 	struct i2c_slaveDevice * slaveDevice = (struct i2c_slaveDevice *) args;
 	
-	uint8_t x_low = 0, x_high = 0;
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_X_L_A, I2C_ADDRESS_SIZE_8BIT, &x_low, 1);
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_X_H_A, I2C_ADDRESS_SIZE_8BIT, &x_high, 1);
+	// Check if Data is ready
+	uint8_t registerData = 0;
+	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_STATUS,  I2C_ADDRESS_SIZE_8BIT, &registerData, 1);
 	
-	//~ sprintf(testBuffer, "%hhx %hhx", x_low, x_high);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-
-	uint8_t y_low = 0, y_high = 0;
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Y_L_A, I2C_ADDRESS_SIZE_8BIT, &y_low, 1);
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Y_H_A, I2C_ADDRESS_SIZE_8BIT, &y_high, 1);
-
-	//~ sprintf(testBuffer, "%hhx %hhx", y_low, y_high);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-	
-	uint8_t z_low = 0, z_high = 0;
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Z_L_A, I2C_ADDRESS_SIZE_8BIT, &z_low, 1);
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Z_H_A, I2C_ADDRESS_SIZE_8BIT, &z_high, 1);
-
-	//~ sprintf(testBuffer, "%hhx %hhx", z_low, z_high);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-	int16_t x = 0, y = 0, z = 0;
-	
-	x = (int16_t) (((uint16_t) x_high << 8) | (x_low));
-	y = (int16_t) (((uint16_t) y_high << 8) | (y_low));
-	z = (int16_t) (((uint16_t) z_high << 8) | (z_low));
-	
-	//~ sprintf(testBuffer, "x= %" PRId16 "; y= %" PRId16 "; z= %" PRId16, x, y, z);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-	//~ uint8_t ctrlReg = 0;
-	//~ i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_CTRL_REG1_A, I2C_ADDRESS_SIZE_8BIT, &ctrlReg, 1);
-	//~ sprintf(testBuffer, "ctrl1reg : %" 	PRIx8, ctrlReg);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-	//~ ctrlReg = 0;
-	//~ i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_CTRL_REG4_A, I2C_ADDRESS_SIZE_8BIT, &ctrlReg, 1);
-	//~ sprintf(testBuffer, "ctrl4reg : %" 	PRIx8, ctrlReg);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-	int i = 0;
-	
-	if (x < 0) {
-		buffer[i++] = '-';
+	if (!(registerData & MPL3115A2_REGISTER_STATUS_PDR)) {
+		logging_send("data nrdy", MODULE_INDEX_MPL311, LOG_WARNING);
+		return;
 	}
-	uint32_t convertValue = (uint32_t) (x < 0) ? -x : x;
-	i += ui2ascii(convertValue, buffer + i);
 	
-	buffer[i++] = '#';
 	
-	if (y < 0) {
-		buffer[i++] = '-';
-	}
-	convertValue = (uint32_t) (y < 0) ? -y : y;
-	i += ui2ascii(convertValue, buffer + i);
+	uint8_t pMSB = 0, pCSB = 0, pLSB = 0;
+	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_MSB, I2C_ADDRESS_SIZE_8BIT, &pMSB, 1);
+	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_CSB, I2C_ADDRESS_SIZE_8BIT, &pCSB, 1);	
+	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_LSB, I2C_ADDRESS_SIZE_8BIT, &pLSB, 1);
 	
-	buffer[i++] = '#';
+	sprintf(testBuffer, "msb: %" PRIx8", csb: %" PRIx8 ", lsb: %" PRIx8, pMSB, pCSB, pLSB);
+	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
 	
-	if (z < 0) {
-		buffer[i++] = '-';
-	}
-	convertValue = (uint32_t) (z < 0) ? -z : z;
-	i += ui2ascii(convertValue, buffer + i);
+	//~ int i = 0;
 	
-	acqBuff_write(acqbuff_Accelerometer, buffer, i);
+	//~ if (x < 0) {
+		//~ buffer[i++] = '-';
+	//~ }
+	//~ uint32_t convertValue = (uint32_t) (x < 0) ? -x : x;
+	//~ i += ui2ascii(convertValue, buffer + i);
+	
+	//~ buffer[i++] = '#';
+	
+	//~ if (y < 0) {
+		//~ buffer[i++] = '-';
+	//~ }
+	//~ convertValue = (uint32_t) (y < 0) ? -y : y;
+	//~ i += ui2ascii(convertValue, buffer + i);
+	
+	//~ buffer[i++] = '#';
+	
+	//~ if (z < 0) {
+		//~ buffer[i++] = '-';
+	//~ }
+	//~ convertValue = (uint32_t) (z < 0) ? -z : z;
+	//~ i += ui2ascii(convertValue, buffer + i);
+	
+	//~ acqBuff_write(acqbuff_Accelerometer, buffer, i);
 }
 
 static void i2cCallback(uint32_t event, void * args) {

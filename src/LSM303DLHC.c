@@ -66,11 +66,11 @@ enum accelRegisters    {
 
 static uint8_t buffer[32];
 
-struct task * runTask = NULL;
-//~ char testBuffer[128];
+static struct task * runTask = NULL;
+static char testBuffer[128];
 
 static void i2cCallback(uint32_t event, void * args);
-static void runLoop(uint32_t event, void * args);
+static void runLSMLoop(uint32_t event, void * args);
 
 int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t msInterval) {
 	struct i2c_slaveConf config = {
@@ -79,7 +79,7 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 	};
 	i2c_ioctl_setSlave(bus, device, I2C_SLAVESET_ADDRESS | I2C_SLAVESET_CALLBACK, &config);
 	
-	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
+	runTask = createTask(runLSMLoop, 0, (void *) device, msInterval, true, 1);
 	
 	
 	int i2c_writeRegister(struct i2c_slaveDevice * slave, uint16_t memoryAddress, 
@@ -103,7 +103,7 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 /**
  * @param args will contain the struct i2c_slaveDevice *.
  */
-static void runLoop(uint32_t event, void * args) {
+static void runLSMLoop(uint32_t event, void * args) {
 	UNUSED(event);
 	struct i2c_slaveDevice * slaveDevice = (struct i2c_slaveDevice *) args;
 	
@@ -136,8 +136,8 @@ static void runLoop(uint32_t event, void * args) {
 	y = (int16_t) (((uint16_t) y_high << 8) | (y_low));
 	z = (int16_t) (((uint16_t) z_high << 8) | (z_low));
 	
-	//~ sprintf(testBuffer, "x= %" PRId16 "; y= %" PRId16 "; z= %" PRId16, x, y, z);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
+	sprintf(testBuffer, "x= %" PRId16 "; y= %" PRId16 "; z= %" PRId16, x, y, z);
+	logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
 	
 	//~ uint8_t ctrlReg = 0;
 	//~ i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_CTRL_REG1_A, I2C_ADDRESS_SIZE_8BIT, &ctrlReg, 1);
