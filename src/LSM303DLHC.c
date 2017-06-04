@@ -88,7 +88,7 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 		return DRIVER_STATUS_ERROR;
 	}
 	
-	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
+	runTask = createTask(runLSMLoop, 0, (void *) device, msInterval, true, 1);
 	
 	return DRIVER_STATUS_OK;
 }
