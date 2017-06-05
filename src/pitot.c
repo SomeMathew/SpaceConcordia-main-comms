@@ -13,8 +13,8 @@ bool init_pitot(void) {
 	spi_handle.Init.DataSize          = SPI_DATASIZE_16BIT;
 	spi_handle.Init.CLKPolarity       = SPI_POLARITY_HIGH;
 	spi_handle.Init.CLKPhase          = SPI_PHASE1_EDGE;
-	spi_handle.Init.NSS               = SPI_HARD_OUTPUT;            // pls check this.
-	spi_handle.Init.BaudRatePrescaler = SPI_BAUDRATE_PRESCALER_256; // and this
+	spi_handle.Init.NSS               = SPI_HARD_OUTPUT;           // pls check this.
+	spi_handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; // and this
 	spi_handle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
 	spi_handle.Init.TIMode            = SPI_TIMODE_DISABLE;
 
