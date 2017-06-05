@@ -15,7 +15,7 @@ bool init_pitot(void) {
 	spi_handle.Init.CLKPolarity       = SPI_POLARITY_HIGH;
 	spi_handle.Init.CLKPhase          = SPI_PHASE_1EDGE;           // Pls check this
 	spi_handle.Init.NSS               = SPI_NSS_HARD_OUTPUT;       // and this
-	spi_handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; // and this
+	spi_handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; // and this
 	spi_handle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
 	spi_handle.Init.TIMode            = SPI_TIMODE_DISABLE;
 
