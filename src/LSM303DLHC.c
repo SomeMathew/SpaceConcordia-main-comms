@@ -67,7 +67,7 @@ static struct task * runTask = NULL;
 static char testBuffer[128];
 
 static void i2cCallback(uint32_t event, void * args);
-static void runLSMLoop(uint32_t event, void * args);
+static void runLoop(uint32_t event, void * args);
 
 int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t msInterval) {
 	struct i2c_slaveConf config = {
@@ -88,7 +88,7 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 		return DRIVER_STATUS_ERROR;
 	}
 	
-	runTask = createTask(runLSMLoop, 0, (void *) device, msInterval, true, 1);
+	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
 	
 	return DRIVER_STATUS_OK;
 }
@@ -96,7 +96,7 @@ int lsm303dlhc_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t
 /**
  * @param args will contain the struct i2c_slaveDevice *.
  */
-static void runLSMLoop(uint32_t event, void * args) {
+static void runLoop(uint32_t event, void * args) {
 	UNUSED(event);
 	struct i2c_slaveDevice * slaveDevice = (struct i2c_slaveDevice *) args;
 	

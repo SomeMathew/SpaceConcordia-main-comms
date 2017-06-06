@@ -13,7 +13,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "LSM303DLHC.h"
+#include "MPL3115A2.h"
 #include "scheduler.h"
 #include "logging.h"
 #include "acquisitionBuffers.h"
@@ -95,7 +95,7 @@ static struct task * runTask = NULL;
 static char testBuffer[128];
 
 static void i2cCallback(uint32_t event, void * args);
-static void runMPLLoop(uint32_t event, void * args);
+static void runLoop(uint32_t event, void * args);
 
 static inline bool timeIsAfter(uint32_t a, uint32_t b) {
     return ((int32_t) (b - a) < 0);
@@ -150,7 +150,7 @@ int mpl3115a2_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t 
 		return DRIVER_STATUS_ERROR;
 	}
 	
-	runTask = createTask(runMPLLoop, 0, (void *) device, msInterval, true, 1);
+	runTask = createTask(runLoop, 0, (void *) device, msInterval, true, 1);
 	
 	return DRIVER_STATUS_OK;
 }
@@ -158,7 +158,7 @@ int mpl3115a2_open(McuDevice_I2C bus, struct i2c_slaveDevice * device, uint32_t 
 /**
  * @param args will contain the struct i2c_slaveDevice *.
  */
-static void runMPLLoop(uint32_t event, void * args) {
+static void runLoop(uint32_t event, void * args) {
 	UNUSED(event);
 	struct i2c_slaveDevice * slaveDevice = (struct i2c_slaveDevice *) args;
 	
