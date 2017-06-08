@@ -171,23 +171,21 @@ static void runLoop(uint32_t event, void * args) {
 		return;
 	}
 	
+	uint8_t readData[3];
+	uint8_t * pMSB = readData, * pCSB = readData + 1, * pLSB = readData + 2;
+	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_MSB, I2C_ADDRESS_SIZE_8BIT, readData, 3);
 	
-	uint8_t pMSB = 0, pCSB = 0, pLSB = 0;
-	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_MSB, I2C_ADDRESS_SIZE_8BIT, &pMSB, 1);
-	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_CSB, I2C_ADDRESS_SIZE_8BIT, &pCSB, 1);	
-	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_LSB, I2C_ADDRESS_SIZE_8BIT, &pLSB, 1);
-	
-	sprintf(testBuffer, "msb: %" PRIx8", csb: %" PRIx8 ", lsb: %" PRIx8, pMSB, pCSB, pLSB);
+	sprintf(testBuffer, "msb: %" PRIx8", csb: %" PRIx8 ", lsb: %" PRIx8, *pMSB, *pCSB, *pLSB);
 	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
 	
 	uint32_t intPart = 0;
-	intPart = (pMSB << 10) | (pCSB << 2) | (pLSB >> 6);
+	intPart = (*pMSB << 10) | (*pCSB << 2) | (*pLSB >> 6);
 	
 	// Complement to a 32 bit neg number if it's negative
 	if (intPart & 0x20000) {
 		intPart |= 0xFFFE0000;
 	}
-	uint32_t fracPart = (pLSB >> 4) & 0x3;
+	uint32_t fracPart = (*pLSB >> 4) & 0x3;
 	
 	int32_t decValue = (int32_t) intPart;
 	
