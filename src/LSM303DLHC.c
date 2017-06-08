@@ -53,6 +53,8 @@
 #define	LSM303_REGISTER_ACCEL_TIME_LATENCY_A    (0x3C)
 #define	LSM303_REGISTER_ACCEL_TIME_WINDOW_A     (0x3D)
 
+#define LSM303_REGISTER_AUTO_INC (0x80)
+
 // ODR 50Hz; Normal Mode (Low-power disabled); Z, Y, Z enabled
 #define LSM303_CONFIG_CTRL_REG1 0x47
 
@@ -100,35 +102,26 @@ static void runLoop(uint32_t event, void * args) {
 	UNUSED(event);
 	struct i2c_slaveDevice * slaveDevice = (struct i2c_slaveDevice *) args;
 	
-	uint8_t x_low = 0, x_high = 0;
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_X_L_A, I2C_ADDRESS_SIZE_8BIT, &x_low, 1);
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_X_H_A, I2C_ADDRESS_SIZE_8BIT, &x_high, 1);
-	
-	//~ sprintf(testBuffer, "%hhx %hhx", x_low, x_high);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-
-	uint8_t y_low = 0, y_high = 0;
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Y_L_A, I2C_ADDRESS_SIZE_8BIT, &y_low, 1);
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Y_H_A, I2C_ADDRESS_SIZE_8BIT, &y_high, 1);
-
-	//~ sprintf(testBuffer, "%hhx %hhx", y_low, y_high);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
-	
-	
-	uint8_t z_low = 0, z_high = 0;
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Z_L_A, I2C_ADDRESS_SIZE_8BIT, &z_low, 1);
-	i2c_readRegister_blocking(slaveDevice, LSM303_REGISTER_ACCEL_OUT_Z_H_A, I2C_ADDRESS_SIZE_8BIT, &z_high, 1);
-
-	//~ sprintf(testBuffer, "%hhx %hhx", z_low, z_high);
-	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
+	uint8_t readData[6];
+	// Read all 6 register at once in order : xl, xh, yl, yh, zl, zh
+	i2c_readRegister_blocking(slaveDevice, (LSM303_REGISTER_ACCEL_OUT_X_L_A | LSM303_REGISTER_AUTO_INC), I2C_ADDRESS_SIZE_8BIT, readData, 6);
 	
 	int16_t x = 0, y = 0, z = 0;
 	
 	// div by 16 since it is a left-aligned 12 bit number (undocumented) (safe >> 4 signed)
-	x = (int16_t) (((uint16_t) x_high << 8) | (x_low))/16;
-	y = (int16_t) (((uint16_t) y_high << 8) | (y_low))/16;
-	z = (int16_t) (((uint16_t) z_high << 8) | (z_low))/16;
+	x = (int16_t) (((uint16_t) readData[1] << 8) | (readData[0]))/16;
+	y = (int16_t) (((uint16_t) readData[3] << 8) | (readData[2]))/16;
+	z = (int16_t) (((uint16_t) readData[5] << 8) | (readData[4]))/16;
+	
+	
+	//~ sprintf(testBuffer, "%hhx %hhx", readData[0], readData[1]);
+	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
+	
+	//~ sprintf(testBuffer, "%hhx %hhx", readData[2], readData[3]);
+	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
+
+	//~ sprintf(testBuffer, "%hhx %hhx", readData[4], readData[5]);
+	//~ logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
 	
 	sprintf(testBuffer, "x= %" PRId16 "; y= %" PRId16 "; z= %" PRId16, x, y, z);
 	logging_send(testBuffer, MODULE_INDEX_LSM303, LOG_DEBUG);
