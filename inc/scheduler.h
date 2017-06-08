@@ -30,7 +30,7 @@
 #include <stdbool.h>
 
 
-#define TASKS_MAX_COUNT 16 // Limited to 256
+#define TASKS_MAX_COUNT 24 // Limited to 256
 #define TASKS_PRIORITY_COUNT 3 // temporary
 
 struct task;
