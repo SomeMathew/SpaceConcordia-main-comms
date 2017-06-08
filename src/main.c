@@ -76,9 +76,13 @@ int main(void) {
 		.clockSpeed = 400000,
 		.addressingMode = I2C_ADDRESSINGMODE_7BIT
 	};
-	struct i2c_slaveDevice mpl311_barometer = {0};
 	i2c_open(mcuDevice_i2cBus2, &i2cBus2Config);
+		
+	struct i2c_slaveDevice mpl311_barometer = {0};
 	mpl3115a2_open(mcuDevice_i2cBus2, &mpl311_barometer, 500);
+	
+	struct i2c_slaveDevice itg3200_gyro = {0};
+	itg3200_open(mcuDevice_i2cBus2, &itg3200_gyro, 500);
 	//~ initTestXbee();
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 

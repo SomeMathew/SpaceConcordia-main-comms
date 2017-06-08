@@ -46,7 +46,7 @@ static void fillBuffers() {
 	acqBuff_write(acqbuff_GPSAltitude, (uint8_t *) DUMMY_FIX_GPS_ALTITUDE, strlen(DUMMY_FIX_GPS_ALTITUDE));
 	acqBuff_write(acqbuff_GPSPosition, (uint8_t *) DUMMY_FIX_GPS_POSITION, strlen(DUMMY_FIX_GPS_POSITION));
 	//~ acqBuff_write(acqbuff_Accelerometer, (uint8_t *) DUMMY_FIX_ACCELEROMETER, strlen(DUMMY_FIX_ACCELEROMETER));
-	acqBuff_write(acqbuff_Gyroscope, (uint8_t *) DUMMY_FIX_GYROSCOPE, strlen(DUMMY_FIX_GYROSCOPE));
+	//~ acqBuff_write(acqbuff_Gyroscope, (uint8_t *) DUMMY_FIX_GYROSCOPE, strlen(DUMMY_FIX_GYROSCOPE));
 }
 
 
