@@ -31,6 +31,7 @@ static void sendTestLog(uint32_t event, void * arg);
 static void sendTestXbee(uint32_t event, void * arg);
 static void changeTestLog(uint32_t event, void * arg);
 static void uartRead(uint32_t event, void * arg);
+static void pitotRead(uint32_t event, void * arg);
 static int loggingStream(uint8_t * data, size_t size);
 
 uint8_t testData[] = "test\n";
@@ -64,6 +65,7 @@ int main(void) {
 	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
 
 	struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
+	struct task * pitotReadTeask = createTask(pitotRead, 0, NULL, 200, true, 0);
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
 	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);
@@ -117,6 +119,10 @@ static void uartRead(uint32_t event, void * arg) {
 		buffer[readSize] = '\0';
 		logging_send((char *) buffer, MODULE_INDEX_MAINTEST, LOG_DEBUG);
 	}
+}
+
+static void pitotRead(uint32_t read, void* arg) {
+	read_pitot();
 }
 
 static void initBlinkGPIO(void) {
