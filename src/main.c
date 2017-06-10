@@ -3,9 +3,9 @@
  * @author Space Concordia Rocket division
  * @author Mathieu Breault
  * @brief main project loop and setup
- * 
+ *
  * This module sets up the system and event scheduler. Contains the work loop.
- * 
+ *
  */
 
 
@@ -16,6 +16,7 @@
 #include "commands.h"
 #include "xbee.h"
 #include "mockDevice.h"
+#include "pitot.h"
 #include "dataGatherer.h"
 #include "LSM303DLHC.h"
 #include "i2c.h"
@@ -48,21 +49,21 @@ int main(void) {
 	// Initialize the HAL Device Library
 	HAL_Init();
 	clockConfig();
-	
+
 	initBlinkGPIO();
 	initTestUart();
-	
+
 
 	logging_open(loggingStream);
 	commands_init(mcuDevice_serialPC);
-	
+
 	if (initTestXbee() == DRIVER_STATUS_ERROR) {
 		logging_send("Failed opening Xbee", MODULE_INDEX_XBEE, LOG_WARNING);
 	}
-	
+
 	mockDevice_init();
 	data_gatherer_init();
-	
+
 	struct i2c_busConf i2cBus1Config = {
 		.clockSpeed = 400000,
 		.addressingMode = I2C_ADDRESSINGMODE_7BIT
@@ -84,10 +85,15 @@ int main(void) {
 
 	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
 	
+	init_pitot();
+	//~ initTestXbee();
+	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
+
+	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
 	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
 	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
 	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);
-	
+
 	//~ struct task * xbeeTestTask = createTask(sendTestXbee, 0, NULL, 500, true, 0);
 	while(1) {
 		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
@@ -131,7 +137,7 @@ static void sendTestLog(uint32_t event, void * arg) {
 static void sendTestXbee(uint32_t event, void * arg) {
 	if (xbee_write(testData, testDataSize) == DRIVER_STATUS_ERROR) {
 		logging_send("Xbee ERROR", MODULE_INDEX_XBEE, LOG_WARNING);
-	} 
+	}
 	logging_send("Xbee Test", MODULE_INDEX_XBEE, LOG_DEBUG);
 }
 
@@ -163,7 +169,7 @@ static void initBlinkGPIO(void) {
 		.Pull = GPIO_NOPULL,
 		.Speed = GPIO_SPEED_FREQ_LOW,
 	};
-	
+
 	HAL_GPIO_Init(GPIOA, &gpioInit);
 }
 
@@ -174,8 +180,8 @@ static void initTestUart(void) {
 		.wordlength = SERIALPC_CONF_WORDLENGTH,
 		.stopbits = SERIALPC_CONF_STOPBITS,
 	};
-	
-	uart_open(mcuDevice_serialPC, &setConfig); 
+
+	uart_open(mcuDevice_serialPC, &setConfig);
 }
 
 static int initTestXbee(void) {
@@ -185,7 +191,7 @@ static int initTestXbee(void) {
 		.wordlength = XBEE_CONF_WORDLENGTH,
 		.stopbits = XBEE_CONF_STOPBITS,
 	};
-	
+
 	uart_open(mcuDevice_serialXBee, &setConfig);
 	return xbee_open(mcuDevice_serialXBee);
 }
@@ -196,7 +202,7 @@ static int loggingStream(uint8_t * data, size_t size) {
 
 /**
  * @brief System clock configuration
- * 
+ *
  * Currently configured as:
  *            System Clock source            = PLL (HSE Bypass)
  *            SYSCLK(Hz)                     = 72000000
@@ -222,9 +228,9 @@ static void clockConfig(void) {
 			.PLLMUL = RCC_PLL_MUL9,
 		},
 	};
-	
+
 	HAL_RCC_OscConfig(&oscInit);
-	
+
 	RCC_ClkInitTypeDef clkInit = {
 		.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2,
 		.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK,
@@ -232,7 +238,7 @@ static void clockConfig(void) {
 		.APB1CLKDivider = RCC_HCLK_DIV2,
 		.APB2CLKDivider = RCC_HCLK_DIV1,
 	};
-	
+
 	HAL_RCC_ClockConfig(&clkInit, FLASH_LATENCY_2);
 }
 
@@ -245,7 +251,7 @@ static void clockConfig(void) {
   * @param  line: assert_param error line source number
   */
 void assert_failed(uint8_t* file, uint32_t line)
-{ 
+{
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 

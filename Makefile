@@ -7,20 +7,20 @@ LDDIR = ldscripts
 # compilation flags for gdb
 
 CFLAGS = -Og -g
-ASFLAGS = -g 
+ASFLAGS = -g
 
 # object files
 
 USROBJS = main.o sysTimer.o scheduler.o linkedList.o \
 		  uart.o i2c.o logging.o circularBuffer.o commands.o \
 		  xbee.o acquisitionBuffers.o mockDevice.o dataGatherer.o \
-		  LSM303DLHC.o MPL3115A2.o
+		  LSM303DLHC.o MPL3115A2.o pitot.o
 
 OBJS = $(addprefix $(OBJDIR)/,$(STARTUP) $(HAL_OBJS) $(USROBJS))
 
 HAL_OBJS = stm32f1xx_hal_gpio.o stm32f1xx_hal_rcc_ex.o stm32f1xx_hal_rcc.o \
            stm32f1xx_hal.o stm32f1xx_hal_cortex.o stm32f1xx_hal_msp.o \
-           stm32f1xx_hal_uart.o stm32f1xx_hal_i2c.o
+           stm32f1xx_hal_uart.o stm32f1xx_hal_i2c.o stm32f1xx_hal_spi.o 
 
 # name of executable
 
@@ -28,7 +28,7 @@ PRG = $(notdir $(PROJROOT))
 ELF = $(OBJDIR)/$(PRG).elf
 BIN = $(OBJDIR)/$(PRG).bin
 MAP = $(OBJDIR)/$(PRG).map
-SIZ = $(PRG).size                  
+SIZ = $(PRG).size
 
 # Tool path
 TOOLVERSION = 6_2-2016q4
@@ -77,9 +77,9 @@ vpath %.h $(DRIVER)/$(INCDIR)
 
 #  Processor specific
 
-PTYPE = STM32F103xB 
+PTYPE = STM32F103xB
 LDSCRIPT = $(LDDIR)/STM32F103RB.ld
-STARTUP = startup_stm32f103xb.o system_stm32f1xx.o 
+STARTUP = startup_stm32f103xb.o system_stm32f1xx.o
 
 # Compilation Flags
 
@@ -93,7 +93,7 @@ CFLAGS += -I$(INCDIR) -I$(DEVICE)/$(INCDIR) -I$(DRIVER)/$(INCDIR)
 CFLAGS += -D$(PTYPE) -DUSE_HAL_DRIVER $(FULLASSERT)
 #~ CFLAGS += -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
 
-# Build executable 
+# Build executable
 
 all : $(ELF) secondary-outputs
 
@@ -121,12 +121,8 @@ clean:
 debug: $(ELF)
 	$(GDB) -iex "target extended-remote :4242" -ex "load" $(ELF)
 
-secondary-outputs: $(BIN) size 
+secondary-outputs: $(BIN) size
 
 # pull in dependencies
 
 -include $(OBJS:.o=.d)
-
-
-
-
