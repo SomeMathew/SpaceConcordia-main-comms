@@ -7,6 +7,8 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_gpio.h"
 
+static void read_pitot(uint32_t event, void * args);
+
 static SPI_HandleTypeDef spi_handle;
 
 static struct task * runTask = NULL;
