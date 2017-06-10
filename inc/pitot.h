@@ -12,12 +12,7 @@
  * Initializes the HAL device struct. Returns true if initialization was
  * successful.
  */
-bool init_pitot(void);
+int init_pitot(uint32_t msInverval);
 
-/*
- * Reads from the pitot tube ADC, converts value to ASCII, and stores in the
- * pitot tube's acquisition buffer.
- */
-void read_pitot();
 
 #endif
