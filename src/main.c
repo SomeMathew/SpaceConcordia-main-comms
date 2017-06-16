@@ -24,23 +24,12 @@
 
 static void clockConfig(void);
 static void initBlinkGPIO(void);
-static void initTestUart(void);
-static int	initTestXbee(void);
-
-
-static void blink(uint32_t, void *);
-static void sendTestUart(uint32_t event, void * arg);
-static void sendTestLog(uint32_t event, void * arg);
-static void sendTestXbee(uint32_t event, void * arg);
-static void changeTestLog(uint32_t event, void * arg);
-static void uartRead(uint32_t event, void * arg);
-static void testLSM303(uint32_t event, void * arg);
+static int initLoggingUART(void);
+static int initXbeeUART(void);
 static int loggingStream(uint8_t * data, size_t size);
 
-uint8_t testData[] = "test\n";
-size_t testDataSize = LENGTH_OF_ARRAY(testData) - 1;
+static void blink(uint32_t, void *);
 
-bool changeLogTestActive = true;
 
 int main(void) {
 	// Call the CSMSIS system clock routine to store the clock frequency
@@ -49,16 +38,19 @@ int main(void) {
 	// Initialize the HAL Device Library
 	HAL_Init();
 	clockConfig();
-
+	
+	
 	initBlinkGPIO();
-	initTestUart();
-
-
+	createTask(blink, 0, NULL, 1000, true, 2);
+	
+	initLoggingUART();
 	logging_open(loggingStream);
 	commands_init(mcuDevice_serialPC);
 
-	if (initTestXbee() == DRIVER_STATUS_ERROR) {
+	if (initXbeeUART() == DRIVER_STATUS_ERROR) {
 		logging_send("Failed opening Xbee", MODULE_INDEX_XBEE, LOG_WARNING);
+	} else {
+		logging_send("Xbee opened", MODULE_INDEX_XBEE, LOG_DEBUG);
 	}
 
 	mockDevice_init();
@@ -69,8 +61,12 @@ int main(void) {
 		.addressingMode = I2C_ADDRESSINGMODE_7BIT
 	};
 	struct i2c_slaveDevice lsm303_accel_slaveDevice = {0};
-	i2c_open(mcuDevice_i2cBus1, &i2cBus1Config);
-	lsm303dlhc_open(mcuDevice_i2cBus1, &lsm303_accel_slaveDevice, 500);
+	if (i2c_open(mcuDevice_i2cBus1, &i2cBus1Config) != I2C_STATUS_OK) {
+		logging_send("Error opening i2c bus1", MODULE_INDEX_I2C, LOG_WARNING);
+	} else {
+		logging_send("I2C1 Opened", MODULE_INDEX_I2C, LOG_DEBUG);
+	}
+	lsm303dlhc_open(mcuDevice_i2cBus1, &lsm303_accel_slaveDevice, POLLING_RATE_ACCEL);
 	
 
 	struct i2c_busConf i2cBus2Config = {
@@ -78,27 +74,23 @@ int main(void) {
 		.addressingMode = I2C_ADDRESSINGMODE_7BIT
 	};
 	struct i2c_slaveDevice mpl311_barometer = {0};
-	i2c_open(mcuDevice_i2cBus2, &i2cBus2Config);
-	mpl3115a2_open(mcuDevice_i2cBus2, &mpl311_barometer, 500);
-	//~ initTestXbee();
-	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
-
-	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
 	
-	init_pitot();
-	//~ initTestXbee();
-	//~ struct task * blinkTask = createTask(blink, 0, NULL, 1000, true, 0);
+	if (i2c_open(mcuDevice_i2cBus2, &i2cBus2Config) != I2C_STATUS_OK) {
+		logging_send("Error opening I2C2", MODULE_INDEX_I2C, LOG_WARNING);
+	} else {
+		logging_send("I2C2 Opened", MODULE_INDEX_I2C, LOG_DEBUG);
+	}
+	
+	mpl3115a2_open(mcuDevice_i2cBus2, &mpl311_barometer, POLLING_RATE_BAROMETER);
+	
+	if (init_pitot(POLLING_RATE_PITOT) != DRIVER_STATUS_OK) {
+		logging_send("Error opening SPI", MODULE_INDEX_SPI, LOG_WARNING);
+	} else {
+		logging_send("SPI Opened", MODULE_INDEX_SPI, LOG_DEBUG);
+	}
 
-	//~ struct task * logTestTask = createTask(sendTestLog, 0, NULL, 500, true, 0);
-	//~ struct task * uartTestTask = createTask(sendTestUart, 0, NULL, 2000, true, 0);
-	//~ struct task * logChangeTask = createTask(changeTestLog, 0, &changeLogTestActive, 3000, true, 1);
-	//~ struct task * uartReadTask = createTask(uartRead, 0, NULL, 200, true, 0);
-
-	//~ struct task * xbeeTestTask = createTask(sendTestXbee, 0, NULL, 500, true, 0);
 	while(1) {
-		//~ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		runScheduler();
-		//~ HAL_Delay(5000);
 	}
 }
 
@@ -119,47 +111,10 @@ size_t ui2ascii(uint32_t n, uint8_t* buffer) {
 }
 
 static void blink(uint32_t event, void * arg) {
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 }
 
-static void sendTestUart(uint32_t event, void * arg) {
-	uart_write(mcuDevice_serialXBee, testData, testDataSize);
-}
 
-static void sendTestLog(uint32_t event, void * arg) {
-	logging_send("testLog debug", MODULE_INDEX_MAINTEST, LOG_DEBUG);
-	logging_send("testLog warning", MODULE_INDEX_MAINTEST, LOG_WARNING);
-	//~ logging_send("testLog critical +1", MODULE_INDEX_MAINTEST + 3, LOG_CRITICAL);
-	logging_send("testLog critical", MODULE_INDEX_MAINTEST, LOG_CRITICAL);
-	logging_send("testLog critical 24", 24, LOG_CRITICAL);
-}
-
-static void sendTestXbee(uint32_t event, void * arg) {
-	if (xbee_write(testData, testDataSize) == DRIVER_STATUS_ERROR) {
-		logging_send("Xbee ERROR", MODULE_INDEX_XBEE, LOG_WARNING);
-	}
-	logging_send("Xbee Test", MODULE_INDEX_XBEE, LOG_DEBUG);
-}
-
-static void changeTestLog(uint32_t event, void * arg) {
-	if (*((bool *) arg)) {
-		logging_setVerbosity(LOG_DEBUG | LOG_CRITICAL);
-		logging_filterModule(MODULE_INDEX_MAINTEST + 1, false);
-	} else {
-		logging_setVerbosity(LOG_DEBUG | LOG_WARNING | LOG_CRITICAL);
-		logging_filterModule(MODULE_INDEX_MAINTEST + 1, true);
-	}
-	*((bool *) arg) = !(*((bool *) arg));
-}
-
-static void uartRead(uint32_t event, void * arg) {
-	uint8_t buffer[50];
-	size_t readSize = uart_read(mcuDevice_serialPC, buffer, 49);
-	if (readSize > 0) {
-		buffer[readSize] = '\0';
-		logging_send((char *) buffer, MODULE_INDEX_MAINTEST, LOG_DEBUG);
-	}
-}
 
 static void initBlinkGPIO(void) {
 	__HAL_RCC_GPIOA_CLK_ENABLE();
@@ -170,10 +125,10 @@ static void initBlinkGPIO(void) {
 		.Speed = GPIO_SPEED_FREQ_LOW,
 	};
 
-	HAL_GPIO_Init(GPIOA, &gpioInit);
+	return HAL_GPIO_Init(GPIOA, &gpioInit);
 }
 
-static void initTestUart(void) {
+static int initLoggingUART(void) {
 	struct uart_ioConf setConfig = {
 		.baudrate = SERIALPC_CONF_BAUDRATE,
 		.parity = SERIALPC_CONF_PARITY,
@@ -181,10 +136,10 @@ static void initTestUart(void) {
 		.stopbits = SERIALPC_CONF_STOPBITS,
 	};
 
-	uart_open(mcuDevice_serialPC, &setConfig);
+	return uart_open(mcuDevice_serialPC, &setConfig);
 }
 
-static int initTestXbee(void) {
+static int initXbeeUART(void) {
 	struct uart_ioConf setConfig = {
 		.baudrate = XBEE_CONF_BAUDRATE,
 		.parity = XBEE_CONF_PARITY,

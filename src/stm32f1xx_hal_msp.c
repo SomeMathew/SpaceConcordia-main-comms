@@ -10,6 +10,7 @@
  
 #include "main.h"
 #include "pinmapping.h"
+#include "logging.h"
 
 /**
  * @defgroup GPIOx_Clock_Status GPIO port clock status
@@ -30,7 +31,7 @@ static void EnableGpioClock(GPIO_TypeDef * port);
  * @brief Global MSP Initialization
  */
 void HAL_MspInit(void) {
-
+	EnableGpioClock(PITOT_CS_PORT);
 }
 
 /**
@@ -164,6 +165,52 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 		HAL_NVIC_SetPriority(I2C1_EV_IRQn, 0, 2);
 		HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
 		HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+	}
+}
+
+/**
+ * @brief initialization of the low-level gpio and DMA for the SPI peripherals.
+ * 
+ * This callback function configures the following hardware resources:
+ * 		-Peripheral Clock
+ * 		-Peripheral GPIO (see pinmapping.h)
+ * 		-DMA
+ * 		-NVIC for DMA and IT transfer
+ */
+void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
+	if (hspi->Instance == SPI2_DEVICE) {
+		__HAL_RCC_SPI2_CLK_ENABLE();
+		EnableGpioClock(SPI2_MOSI_PORT);
+		EnableGpioClock(SPI2_MISO_PORT);
+		EnableGpioClock(SPI2_SCK_PORT);
+		
+		
+		GPIO_InitTypeDef gpioInit = {0};
+		
+		// Initialize the MISO pin
+		gpioInit.Pin       = SPI2_MISO_PIN;
+		gpioInit.Mode      = GPIO_MODE_AF_INPUT;
+		gpioInit.Pull      = GPIO_NOPULL;
+		gpioInit.Speed     = GPIO_SPEED_FREQ_LOW;
+		HAL_GPIO_Init(SPI2_MISO_PORT, &gpioInit);
+		
+		//~ /* SPI MOSI GPIO pin configuration  */
+		//~ gpioInit.Pin = SPI2_MOSI_PIN;
+		//~ gpioInit.Mode = GPIO_MODE_AF_PP;
+		//~ gpioInit.Pull = GPIO_NOPULL;
+		//~ HAL_GPIO_Init(SPI2_MOSI_PORT, &gpioInit);
+		
+		/* SPI SCK GPIO pin configuration  */
+		gpioInit.Pin = SPI2_SCK_PIN;
+		gpioInit.Mode = GPIO_MODE_AF_PP;
+		gpioInit.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(SPI2_SCK_PORT, &gpioInit);
+		logging_send("test spi", MODULE_INDEX_SPI, LOG_DEBUG);
+		
+		// No DMA for I2C2 Set for interrupt based transfer
+		// TODO: Add possibility for a DMA define in pinmapping to activate it.
+		HAL_NVIC_SetPriority(SPI2_IRQn, 1, 1);
+		HAL_NVIC_EnableIRQ(SPI2_IRQn);
 	}
 }
 

@@ -29,6 +29,12 @@
  */
 #define ARRAY_WITH_SIZE(__ARRAY__) {(__ARRAY__), (LENGTH_OF_ARRAY(__ARRAY__))}
 
+// Sensor polling rate
+
+#define POLLING_RATE_ACCEL 50
+#define POLLING_RATE_BAROMETER 50
+#define POLLING_RATE_PITOT 50
+
 // Module index for logging control
 
 #define MODULE_INDEX_MAINTEST 0
@@ -37,6 +43,8 @@
 #define MODULE_INDEX_I2C 3
 #define MODULE_INDEX_LSM303 4
 #define MODULE_INDEX_MPL311 5
+#define MODULE_INDEX_SPI 6
+#define MODULE_INDEX_PITOT 7
 
 // Device drivers and GPIO configurations
 // TODO more clean implementation or move to an other module?

@@ -171,11 +171,14 @@ static void runLoop(uint32_t event, void * args) {
 		return;
 	}
 	
-	uint8_t readData[3];
-	uint8_t * pMSB = readData, * pCSB = readData + 1, * pLSB = readData + 2;
-	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_MSB, I2C_ADDRESS_SIZE_8BIT, readData, 3);
+	uint8_t readData[5];
+	uint8_t * pMSB = readData, * pCSB = readData + 1, * pLSB = readData + 2, * tMSB = readData + 3, * tLSB = readData + 4;
+	i2c_readRegister_blocking(slaveDevice, MPL3115A2_REGISTER_PRESSURE_MSB, I2C_ADDRESS_SIZE_8BIT, readData, 5);
 	
-	sprintf(testBuffer, "msb: %" PRIx8", csb: %" PRIx8 ", lsb: %" PRIx8, *pMSB, *pCSB, *pLSB);
+	sprintf(testBuffer, "MPL msb: %" PRIx8", csb: %" PRIx8 ", lsb: %" PRIx8, *pMSB, *pCSB, *pLSB);
+	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
+	
+	sprintf(testBuffer, "temp msb: %" PRIx8", lsb: %" PRIx8, *tMSB, *tLSB);
 	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
 	
 	uint32_t intPart = 0;
@@ -208,6 +211,38 @@ static void runLoop(uint32_t event, void * args) {
 	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
 	
 	acqBuff_write(acqbuff_Barometer, buffer, i);
+	
+	
+	
+	/* TEMPERATURE */
+	int8_t tIntPart = *tMSB;
+	
+	// Complement to a 32 bit neg number if it's negative
+
+	// Droping the LSB to simplify the conversion to ascii since then step are .125 instead of 0.0625
+	fracPart = (*pLSB >> 5);
+	
+	decValue = (int32_t) tIntPart;
+	
+	
+	
+	i = 0;
+	
+	if (decValue < 0) {
+		buffer[i++] = '-';
+	}
+	convertValue = (uint32_t) (decValue < 0) ? -decValue : decValue;
+	i += ui2ascii(convertValue, buffer + i);
+	
+	buffer[i++] = '.';
+	
+	fracPart = 125 * fracPart;
+	i += ui2ascii(fracPart, buffer + i);
+	
+	sprintf(testBuffer, "temp val %" PRId32, convertValue);
+	logging_send(testBuffer, MODULE_INDEX_MPL311, LOG_DEBUG);
+	
+	acqBuff_write(acqbuff_Gyroscope, buffer, i);
 }
 
 static void i2cCallback(uint32_t event, void * args) {
